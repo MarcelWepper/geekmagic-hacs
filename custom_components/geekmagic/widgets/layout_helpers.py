@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..const import COLOR_GRAY, COLOR_WHITE
+from .flex_layout import layout_bar_gauge
 
 if TYPE_CHECKING:
     from ..render_context import RenderContext
@@ -164,7 +165,9 @@ def layout_bar_with_label(
 ) -> None:
     """Render progress bar with label/value above.
 
-    Common pattern for gauge and progress widgets.
+    Common pattern for gauge and progress widgets. Uses flexbox layout
+    to automatically switch between horizontal and vertical arrangements
+    based on available space.
 
     Args:
         ctx: RenderContext for drawing
@@ -179,30 +182,47 @@ def layout_bar_with_label(
     """
     font_label = ctx.get_font("tiny")
     font_value = ctx.get_font("medium", bold=True)
-
-    # Calculate layout
-    padding = int(ctx.height * 0.13)
     icon_size = max(10, int(ctx.height * 0.23))
-    label_y = int(ctx.height * 0.33)
-    bar_height = max(6, int(ctx.height * 0.17))
-    bar_y = int(ctx.height * 0.67) - bar_height // 2
 
-    # Draw icon if present
-    text_start_x = padding
-    if icon:
-        ctx.draw_icon(icon, (padding, label_y - icon_size // 2), icon_size, color)
-        text_start_x = padding + icon_size + 4
-
-    # Draw label
-    if label:
-        ctx.draw_text(label.upper(), (text_start_x, label_y), font_label, label_color, anchor="lm")
+    # Use flexbox layout calculation
+    use_vertical, boxes = layout_bar_gauge(
+        ctx,
+        value_text=value,
+        label_text=label if label else None,
+        has_icon=bool(icon),
+    )
 
     # Draw value
-    ctx.draw_text(value, (ctx.width - padding, label_y), font_value, value_color, anchor="rm")
+    if "value" in boxes:
+        box = boxes["value"]
+        if use_vertical:
+            # Vertical: centered
+            ctx.draw_text(value, box.center, font_value, value_color, anchor="mm")
+        else:
+            # Horizontal: right-aligned
+            ctx.draw_text(value, (box.right, box.center[1]), font_value, value_color, anchor="rm")
 
     # Draw bar
-    bar_rect = (padding, bar_y, ctx.width - padding, bar_y + bar_height)
-    ctx.draw_bar(bar_rect, percent, color, background)
+    if "bar" in boxes:
+        box = boxes["bar"]
+        ctx.draw_bar((box.x, box.y, box.right, box.bottom), percent, color, background)
+
+    # Draw label
+    if "label" in boxes and label:
+        box = boxes["label"]
+        if use_vertical:
+            # Vertical: centered
+            ctx.draw_text(label.upper(), box.center, font_label, label_color, anchor="mm")
+        else:
+            # Horizontal: left-aligned
+            pos = (box.x, box.center[1])
+            ctx.draw_text(label.upper(), pos, font_label, label_color, anchor="lm")
+
+    # Draw icon (only in horizontal layout)
+    if "icon" in boxes and icon:
+        box = boxes["icon"]
+        icon_y = box.y + (box.height - icon_size) // 2
+        ctx.draw_icon(icon, (box.x, icon_y), icon_size, color)
 
 
 def layout_list_rows(
