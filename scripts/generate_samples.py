@@ -442,9 +442,9 @@ def generate_server_stats(renderer: Renderer, output_dir: Path) -> None:
         draw, "48 MB/s", (112, y_net), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
     )
 
-    # Connections
+    # Connections (right-aligned to fit)
     renderer.draw_text(
-        draw, "CONN: 1,247", (180, y_net), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+        draw, "CONN: 1,247", (224, y_net), font=renderer.font_tiny, color=COLOR_GRAY, anchor="rm"
     )
 
     save_image(renderer, img, "04_server_stats", output_dir)
@@ -593,19 +593,19 @@ def generate_energy_monitor(renderer: Renderer, output_dir: Path) -> None:
             draw, value, (x, y + 14), font=renderer.font_small, color=color, anchor="lm"
         )
 
-    # Cost
+    # Cost (adjusted layout for larger fonts)
     renderer.draw_panel(draw, (8, 205, 232, 232), COLOR_PANEL, radius=4)
     renderer.draw_text(
-        draw, "TODAY COST", (16, 215), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+        draw, "COST", (16, 218), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
     )
     renderer.draw_text(
-        draw, "$2.45", (100, 218), font=renderer.font_medium, color=COLOR_WHITE, anchor="lm"
+        draw, "$2.45", (55, 218), font=renderer.font_medium, color=COLOR_WHITE, anchor="lm"
     )
     renderer.draw_text(
-        draw, "SAVED", (155, 215), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+        draw, "SAVED", (135, 218), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
     )
     renderer.draw_text(
-        draw, "$4.80", (190, 218), font=renderer.font_medium, color=COLOR_LIME, anchor="lm"
+        draw, "$4.80", (180, 218), font=renderer.font_medium, color=COLOR_LIME, anchor="lm"
     )
 
     save_image(renderer, img, "06_energy_monitor", output_dir)

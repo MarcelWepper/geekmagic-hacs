@@ -59,14 +59,14 @@ class Renderer:
         self.width = DISPLAY_WIDTH
         self.height = DISPLAY_HEIGHT
 
-        # Load fonts at different sizes
-        self.font_tiny = _load_font(9)
-        self.font_small = _load_font(11)
-        self.font_regular = _load_font(13)
-        self.font_medium = _load_font(16)
-        self.font_large = _load_font(22)
-        self.font_xlarge = _load_font(32)
-        self.font_huge = _load_font(48)
+        # Load fonts at different sizes (min 11px for readability on 240x240 display)
+        self.font_tiny = _load_font(11)
+        self.font_small = _load_font(13)
+        self.font_regular = _load_font(15)
+        self.font_medium = _load_font(18)
+        self.font_large = _load_font(24)
+        self.font_xlarge = _load_font(36)
+        self.font_huge = _load_font(52)
 
         # Cairo surface and context (created per render)
         self._surface: cairo.ImageSurface | None = None
