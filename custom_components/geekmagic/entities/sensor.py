@@ -91,7 +91,7 @@ async def async_setup_entry(
 
         screens = coordinator.options.get(CONF_SCREENS, [])
         for screen_idx, screen_config in enumerate(screens):
-            # Screen header divider - "(" sorts before "A" (Apply Template)
+            # Screen header divider
             screen_divider_key = f"screen_{screen_idx + 1}_divider"
             if screen_divider_key not in current_divider_ids:
                 current_divider_ids.add(screen_divider_key)
@@ -105,8 +105,7 @@ async def async_setup_entry(
                             screen_index=screen_idx,
                             is_divider=True,
                         ),
-                        # Use "(" prefix to sort before "Apply Template"
-                        name=f"Screen {screen_idx + 1} (────────────)",
+                        name=f"─── Screen {screen_idx + 1} ───",
                     )
                 )
 
@@ -115,7 +114,7 @@ async def async_setup_entry(
             slot_count = LAYOUT_SLOT_COUNTS.get(layout_type, 4)
 
             for slot_idx in range(slot_count):
-                # Slot header divider - "(" sorts before "D" (Display)
+                # Slot header divider
                 slot_divider_key = f"screen_{screen_idx + 1}_slot_{slot_idx + 1}_divider"
                 if slot_divider_key not in current_divider_ids:
                     current_divider_ids.add(slot_divider_key)
@@ -130,8 +129,7 @@ async def async_setup_entry(
                                 slot_index=slot_idx,
                                 is_divider=True,
                             ),
-                            # Use "(" prefix to sort before "Display"
-                            name=f"Screen {screen_idx + 1} Slot {slot_idx + 1} (────────)",
+                            name=f"── Slot {slot_idx + 1} ──",
                         )
                     )
 
