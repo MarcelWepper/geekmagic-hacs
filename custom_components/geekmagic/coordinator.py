@@ -269,6 +269,37 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
         # Rebuild all screens
         self._setup_screens()
 
+    def _render_display(self) -> tuple[bytes, bytes]:
+        """Render the display image (runs in executor thread).
+
+        Returns:
+            Tuple of (jpeg_data, png_data)
+        """
+        # Create canvas
+        img, draw = self.renderer.create_canvas()
+
+        # Render current screen's layout
+        if self._layouts and 0 <= self._current_screen < len(self._layouts):
+            layout = self._layouts[self._current_screen]
+            _LOGGER.debug(
+                "Rendering layout %s with %d widgets",
+                type(layout).__name__,
+                sum(1 for s in layout.slots if s.widget is not None),
+            )
+            layout.render(self.renderer, draw, self.hass)
+        else:
+            _LOGGER.warning(
+                "No layout available for screen %d (total layouts: %d)",
+                self._current_screen,
+                len(self._layouts),
+            )
+
+        # Encode to both formats
+        jpeg_data = self.renderer.to_jpeg(img)
+        png_data = self.renderer.to_png(img)
+
+        return jpeg_data, png_data
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data and update display.
 
@@ -299,32 +330,15 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
                         self._current_screen,
                     )
 
-            # Create canvas
-            img, draw = self.renderer.create_canvas()
-
-            # Render current screen's layout
-            if self._layouts and 0 <= self._current_screen < len(self._layouts):
-                layout = self._layouts[self._current_screen]
-                _LOGGER.debug(
-                    "Rendering layout %s with %d widgets",
-                    type(layout).__name__,
-                    sum(1 for s in layout.slots if s.widget is not None),
-                )
-                layout.render(self.renderer, draw, self.hass)
-            else:
-                _LOGGER.warning(
-                    "No layout available for screen %d (total layouts: %d)",
-                    self._current_screen,
-                    len(self._layouts),
-                )
-
-            # Store PNG for camera preview
-            self._last_image = self.renderer.to_png(img)
-            _LOGGER.debug("Generated PNG preview: %d bytes", len(self._last_image))
-
-            # Convert to JPEG and upload
-            jpeg_data = self.renderer.to_jpeg(img)
-            _LOGGER.debug("Generated JPEG for upload: %d bytes", len(jpeg_data))
+            # Render image in executor to avoid blocking the event loop
+            # (Pillow image operations are CPU-intensive)
+            jpeg_data, png_data = await self.hass.async_add_executor_job(self._render_display)
+            self._last_image = png_data
+            _LOGGER.debug(
+                "Rendered image: JPEG=%d bytes, PNG=%d bytes",
+                len(jpeg_data),
+                len(png_data),
+            )
 
             await self.device.upload_and_display(jpeg_data, "dashboard.jpg")
 
