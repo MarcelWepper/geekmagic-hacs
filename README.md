@@ -27,6 +27,34 @@ A Home Assistant custom integration for GeekMagic displays (SmallTV Pro and simi
   <img src="samples/12_security.png" alt="Security" width="120">
 </p>
 
+## Widget Gallery
+
+| Widget | 1x1 | 1x2 | 2x1 | 2x2 | 2x3 | 3x3 |
+|--------|-----|-----|-----|-----|-----|-----|
+| **Gauge (Bar)** | <img src="samples/widgets/gauge_bar_1x1.png" width="60"> | <img src="samples/widgets/gauge_bar_1x2.png" width="60"> | <img src="samples/widgets/gauge_bar_2x1.png" width="60"> | <img src="samples/widgets/gauge_bar_2x2.png" width="60"> | <img src="samples/widgets/gauge_bar_2x3.png" width="60"> | <img src="samples/widgets/gauge_bar_3x3.png" width="60"> |
+| **Gauge (Ring)** | <img src="samples/widgets/gauge_ring_1x1.png" width="60"> | <img src="samples/widgets/gauge_ring_1x2.png" width="60"> | <img src="samples/widgets/gauge_ring_2x1.png" width="60"> | <img src="samples/widgets/gauge_ring_2x2.png" width="60"> | <img src="samples/widgets/gauge_ring_2x3.png" width="60"> | <img src="samples/widgets/gauge_ring_3x3.png" width="60"> |
+| **Gauge (Arc)** | <img src="samples/widgets/gauge_arc_1x1.png" width="60"> | <img src="samples/widgets/gauge_arc_1x2.png" width="60"> | <img src="samples/widgets/gauge_arc_2x1.png" width="60"> | <img src="samples/widgets/gauge_arc_2x2.png" width="60"> | <img src="samples/widgets/gauge_arc_2x3.png" width="60"> | <img src="samples/widgets/gauge_arc_3x3.png" width="60"> |
+| **Entity (Icon)** | <img src="samples/widgets/entity_icon_1x1.png" width="60"> | <img src="samples/widgets/entity_icon_1x2.png" width="60"> | <img src="samples/widgets/entity_icon_2x1.png" width="60"> | <img src="samples/widgets/entity_icon_2x2.png" width="60"> | <img src="samples/widgets/entity_icon_2x3.png" width="60"> | <img src="samples/widgets/entity_icon_3x3.png" width="60"> |
+| **Entity (Plain)** | <img src="samples/widgets/entity_plain_1x1.png" width="60"> | <img src="samples/widgets/entity_plain_1x2.png" width="60"> | <img src="samples/widgets/entity_plain_2x1.png" width="60"> | <img src="samples/widgets/entity_plain_2x2.png" width="60"> | <img src="samples/widgets/entity_plain_2x3.png" width="60"> | <img src="samples/widgets/entity_plain_3x3.png" width="60"> |
+| **Clock** | <img src="samples/widgets/clock_1x1.png" width="60"> | <img src="samples/widgets/clock_1x2.png" width="60"> | <img src="samples/widgets/clock_2x1.png" width="60"> | <img src="samples/widgets/clock_2x2.png" width="60"> | <img src="samples/widgets/clock_2x3.png" width="60"> | <img src="samples/widgets/clock_3x3.png" width="60"> |
+| **Text** | <img src="samples/widgets/text_1x1.png" width="60"> | <img src="samples/widgets/text_1x2.png" width="60"> | <img src="samples/widgets/text_2x1.png" width="60"> | <img src="samples/widgets/text_2x2.png" width="60"> | <img src="samples/widgets/text_2x3.png" width="60"> | <img src="samples/widgets/text_3x3.png" width="60"> |
+| **Progress** | <img src="samples/widgets/progress_1x1.png" width="60"> | <img src="samples/widgets/progress_1x2.png" width="60"> | <img src="samples/widgets/progress_2x1.png" width="60"> | <img src="samples/widgets/progress_2x2.png" width="60"> | <img src="samples/widgets/progress_2x3.png" width="60"> | <img src="samples/widgets/progress_3x3.png" width="60"> |
+| **Weather** | <img src="samples/widgets/weather_1x1.png" width="60"> | <img src="samples/widgets/weather_1x2.png" width="60"> | <img src="samples/widgets/weather_2x1.png" width="60"> | <img src="samples/widgets/weather_2x2.png" width="60"> | <img src="samples/widgets/weather_2x3.png" width="60"> | <img src="samples/widgets/weather_3x3.png" width="60"> |
+| **Status** | <img src="samples/widgets/status_1x1.png" width="60"> | <img src="samples/widgets/status_1x2.png" width="60"> | <img src="samples/widgets/status_2x1.png" width="60"> | <img src="samples/widgets/status_2x2.png" width="60"> | <img src="samples/widgets/status_2x3.png" width="60"> | <img src="samples/widgets/status_3x3.png" width="60"> |
+| **Chart** | <img src="samples/widgets/chart_1x1.png" width="60"> | <img src="samples/widgets/chart_1x2.png" width="60"> | <img src="samples/widgets/chart_2x1.png" width="60"> | <img src="samples/widgets/chart_2x2.png" width="60"> | <img src="samples/widgets/chart_2x3.png" width="60"> | <img src="samples/widgets/chart_3x3.png" width="60"> |
+
+## Layout Examples
+
+<p align="center">
+  <img src="samples/layouts/layout_grid_2x2.png" alt="Grid 2x2" width="120">
+  <img src="samples/layouts/layout_grid_2x3.png" alt="Grid 2x3" width="120">
+  <img src="samples/layouts/layout_hero.png" alt="Hero" width="120">
+  <img src="samples/layouts/layout_split_vertical.png" alt="Split" width="120">
+  <img src="samples/layouts/layout_three_column.png" alt="Three Column" width="120">
+</p>
+
+---
+
 ## Features
 
 - **12 widget types**: Clock, entity, media, chart, text, gauge, progress, weather, status, camera, and more
@@ -58,257 +86,15 @@ A Home Assistant custom integration for GeekMagic displays (SmallTV Pro and simi
 3. Search for "GeekMagic"
 4. Enter your device's IP address
 
-### Initial Setup
-
-After adding the integration, your device will display a welcome screen with live data until you configure a dashboard:
+After adding the integration, your device will display a welcome screen until you configure a dashboard:
 
 <p align="center">
   <img src="samples/00_welcome_screen.png" alt="Welcome Screen" width="180">
 </p>
 
-The welcome screen shows:
-- **Current time and date** - Updates every refresh interval
-- **Home Assistant version** - Your HA instance version
-- **Entity count** - Total entities in your system
-- **Configure hint** - Reminder to set up your dashboard
-
 ---
 
-## Entity-Based Configuration (WLED-Style)
-
-GeekMagic uses **entity-based configuration** similar to WLED. Instead of navigating through settings menus, you configure your display directly through Home Assistant entities on the device page.
-
-### Device Entities
-
-After setup, your device exposes these configuration entities:
-
-#### Device Controls
-| Entity | Type | Description |
-|--------|------|-------------|
-| `number.xxx_brightness` | Number | Display brightness (0-100) |
-| `number.xxx_refresh_interval` | Number | Update interval in seconds (5-300) |
-| `number.xxx_screen_cycle_interval` | Number | Auto-cycle screens (0=disabled, 5-300s) |
-| `number.xxx_screen_count` | Number | Number of screens (1-10) |
-| `select.xxx_current_screen` | Select | Active screen selector |
-
-#### Action Buttons
-| Entity | Type | Description |
-|--------|------|-------------|
-| `button.xxx_refresh_now` | Button | Force immediate display update |
-| `button.xxx_next_screen` | Button | Switch to next screen |
-| `button.xxx_previous_screen` | Button | Switch to previous screen |
-
-#### Diagnostic Sensors
-| Entity | Type | Description |
-|--------|------|-------------|
-| `sensor.xxx_status` | Sensor | Connection status (connected/disconnected) |
-| `sensor.xxx_current_screen_name` | Sensor | Name of the currently active screen |
-
-### Per-Screen Entities
-
-Each screen has its own configuration entities:
-
-| Entity | Type | Description |
-|--------|------|-------------|
-| `text.xxx_screen_N_name` | Text | Screen name |
-| `select.xxx_screen_N_layout` | Select | Layout type (grid, hero, split, etc.) |
-
-### Per-Slot Entities
-
-Each slot in a layout has widget configuration:
-
-| Entity | Type | Description |
-|--------|------|-------------|
-| `select.xxx_screen_N_slot_M_widget` | Select | Widget type |
-| `text.xxx_screen_N_slot_M_entity` | Text | Home Assistant entity ID to display |
-| `text.xxx_screen_N_slot_M_label` | Text | Custom label (optional) |
-
-### Widget Option Switches
-
-Boolean options for each widget type appear as switches:
-
-| Widget | Options |
-|--------|---------|
-| Clock | `show_seconds`, `show_date` |
-| Entity | `show_name`, `show_unit`, `show_panel` |
-| Chart | `show_value`, `show_range` |
-| Media | `show_artist`, `show_album`, `show_progress` |
-| Weather | `show_forecast`, `show_humidity`, `show_wind` |
-| Progress | `show_target` |
-| Camera | `show_label` |
-
----
-
-## Configuration Examples
-
-### Weather Dashboard (Hero Layout)
-
-A weather-focused display with forecast and indoor conditions.
-
-```yaml
-# Screen: Hero layout (4 slots)
-# Slot 0 (hero): Weather widget with forecast
-# Slot 1-3 (footer): Indoor temp, humidity, outdoor temp
-
-# Configure via entities:
-select.geekmagic_display_screen_1_layout: "Hero (4 slots)"
-select.geekmagic_display_screen_1_slot_1_widget: "Weather"
-text.geekmagic_display_screen_1_slot_1_entity: "weather.home"
-select.geekmagic_display_screen_1_slot_2_widget: "Entity"
-text.geekmagic_display_screen_1_slot_2_entity: "sensor.living_room_temperature"
-select.geekmagic_display_screen_1_slot_3_widget: "Entity"
-text.geekmagic_display_screen_1_slot_3_entity: "sensor.living_room_humidity"
-select.geekmagic_display_screen_1_slot_4_widget: "Entity"
-text.geekmagic_display_screen_1_slot_4_entity: "sensor.outdoor_temperature"
-```
-
-### System Monitor (Grid 2x2)
-
-Monitor your server or Home Assistant host.
-
-```yaml
-# Screen: Grid 2x2 layout (4 slots)
-# 4 gauge widgets showing CPU, Memory, Disk, Network
-
-select.geekmagic_display_screen_1_layout: "Grid 2x2 (4 slots)"
-select.geekmagic_display_screen_1_slot_1_widget: "Gauge"
-text.geekmagic_display_screen_1_slot_1_entity: "sensor.processor_use"
-select.geekmagic_display_screen_1_slot_2_widget: "Gauge"
-text.geekmagic_display_screen_1_slot_2_entity: "sensor.memory_use_percent"
-select.geekmagic_display_screen_1_slot_3_widget: "Gauge"
-text.geekmagic_display_screen_1_slot_3_entity: "sensor.disk_use_percent"
-select.geekmagic_display_screen_1_slot_4_widget: "Chart"
-text.geekmagic_display_screen_1_slot_4_entity: "sensor.network_throughput_in"
-```
-
-### Media Player (Hero Layout)
-
-Display now playing with album art.
-
-```yaml
-# Screen: Hero layout
-# Slot 0 (hero): Media player with album art
-# Slot 1-3: Additional info
-
-select.geekmagic_display_screen_1_layout: "Hero (4 slots)"
-select.geekmagic_display_screen_1_slot_1_widget: "Media Player"
-text.geekmagic_display_screen_1_slot_1_entity: "media_player.spotify"
-select.geekmagic_display_screen_1_slot_2_widget: "Text"
-select.geekmagic_display_screen_1_slot_3_widget: "Entity"
-text.geekmagic_display_screen_1_slot_3_entity: "sensor.living_room_temperature"
-select.geekmagic_display_screen_1_slot_4_widget: "Clock"
-```
-
-### Smart Home Overview (Grid 2x3)
-
-6 entity slots for a compact home status view.
-
-```yaml
-# Screen: Grid 2x3 layout (6 slots)
-# Mix of temperature, humidity, and status widgets
-
-select.geekmagic_display_screen_1_layout: "Grid 2x3 (6 slots)"
-select.geekmagic_display_screen_1_slot_1_widget: "Entity"
-text.geekmagic_display_screen_1_slot_1_entity: "sensor.living_room_temperature"
-select.geekmagic_display_screen_1_slot_2_widget: "Entity"
-text.geekmagic_display_screen_1_slot_2_entity: "sensor.living_room_humidity"
-select.geekmagic_display_screen_1_slot_3_widget: "Status"
-text.geekmagic_display_screen_1_slot_3_entity: "binary_sensor.front_door"
-select.geekmagic_display_screen_1_slot_4_widget: "Status"
-text.geekmagic_display_screen_1_slot_4_entity: "binary_sensor.motion_sensor"
-select.geekmagic_display_screen_1_slot_5_widget: "Entity"
-text.geekmagic_display_screen_1_slot_5_entity: "light.living_room"
-select.geekmagic_display_screen_1_slot_6_widget: "Status"
-text.geekmagic_display_screen_1_slot_6_entity: "person.john"
-```
-
-### Clock & Temperature (Split Layout)
-
-Large clock with chart on the side.
-
-```yaml
-# Screen: Split layout (2 slots)
-# Slot 0: Large clock
-# Slot 1: Temperature chart
-
-select.geekmagic_display_screen_1_layout: "Split (2 slots)"
-select.geekmagic_display_screen_1_slot_1_widget: "Clock"
-select.geekmagic_display_screen_1_slot_2_widget: "Chart"
-text.geekmagic_display_screen_1_slot_2_entity: "sensor.outdoor_temperature"
-```
-
-### Example Automations
-
-```yaml
-# Cycle screens based on time of day
-automation:
-  - alias: "Morning dashboard"
-    trigger:
-      - platform: time
-        at: "07:00:00"
-    action:
-      - service: select.select_option
-        target:
-          entity_id: select.geekmagic_display_current_screen
-        data:
-          option: "Weather"
-
-  - alias: "Evening dashboard"
-    trigger:
-      - platform: time
-        at: "18:00:00"
-    action:
-      - service: select.select_option
-        target:
-          entity_id: select.geekmagic_display_current_screen
-        data:
-          option: "Media"
-```
-
-```yaml
-# Show security camera when motion detected
-automation:
-  - alias: "Show camera on motion"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.front_door_motion
-        to: "on"
-    action:
-      - service: select.select_option
-        target:
-          entity_id: select.geekmagic_display_screen_1_slot_1_widget
-        data:
-          option: "Camera"
-      - service: text.set_value
-        target:
-          entity_id: text.geekmagic_display_screen_1_slot_1_entity
-        data:
-          value: "camera.front_door"
-```
-
----
-
-## Widgets
-
-### Widget Gallery
-
-Widgets automatically adapt their layout based on cell size:
-
-| Widget | 1x1 | 1x2 | 2x1 | 2x2 | 2x3 | 3x3 |
-|--------|-----|-----|-----|-----|-----|-----|
-| **Gauge (Bar)** | <img src="samples/widgets/gauge_bar_1x1.png" width="60"> | <img src="samples/widgets/gauge_bar_1x2.png" width="60"> | <img src="samples/widgets/gauge_bar_2x1.png" width="60"> | <img src="samples/widgets/gauge_bar_2x2.png" width="60"> | <img src="samples/widgets/gauge_bar_2x3.png" width="60"> | <img src="samples/widgets/gauge_bar_3x3.png" width="60"> |
-| **Gauge (Ring)** | <img src="samples/widgets/gauge_ring_1x1.png" width="60"> | <img src="samples/widgets/gauge_ring_1x2.png" width="60"> | <img src="samples/widgets/gauge_ring_2x1.png" width="60"> | <img src="samples/widgets/gauge_ring_2x2.png" width="60"> | <img src="samples/widgets/gauge_ring_2x3.png" width="60"> | <img src="samples/widgets/gauge_ring_3x3.png" width="60"> |
-| **Gauge (Arc)** | <img src="samples/widgets/gauge_arc_1x1.png" width="60"> | <img src="samples/widgets/gauge_arc_1x2.png" width="60"> | <img src="samples/widgets/gauge_arc_2x1.png" width="60"> | <img src="samples/widgets/gauge_arc_2x2.png" width="60"> | <img src="samples/widgets/gauge_arc_2x3.png" width="60"> | <img src="samples/widgets/gauge_arc_3x3.png" width="60"> |
-| **Entity (Icon)** | <img src="samples/widgets/entity_icon_1x1.png" width="60"> | <img src="samples/widgets/entity_icon_1x2.png" width="60"> | <img src="samples/widgets/entity_icon_2x1.png" width="60"> | <img src="samples/widgets/entity_icon_2x2.png" width="60"> | <img src="samples/widgets/entity_icon_2x3.png" width="60"> | <img src="samples/widgets/entity_icon_3x3.png" width="60"> |
-| **Entity (Plain)** | <img src="samples/widgets/entity_plain_1x1.png" width="60"> | <img src="samples/widgets/entity_plain_1x2.png" width="60"> | <img src="samples/widgets/entity_plain_2x1.png" width="60"> | <img src="samples/widgets/entity_plain_2x2.png" width="60"> | <img src="samples/widgets/entity_plain_2x3.png" width="60"> | <img src="samples/widgets/entity_plain_3x3.png" width="60"> |
-| **Clock** | <img src="samples/widgets/clock_1x1.png" width="60"> | <img src="samples/widgets/clock_1x2.png" width="60"> | <img src="samples/widgets/clock_2x1.png" width="60"> | <img src="samples/widgets/clock_2x2.png" width="60"> | <img src="samples/widgets/clock_2x3.png" width="60"> | <img src="samples/widgets/clock_3x3.png" width="60"> |
-| **Text** | <img src="samples/widgets/text_1x1.png" width="60"> | <img src="samples/widgets/text_1x2.png" width="60"> | <img src="samples/widgets/text_2x1.png" width="60"> | <img src="samples/widgets/text_2x2.png" width="60"> | <img src="samples/widgets/text_2x3.png" width="60"> | <img src="samples/widgets/text_3x3.png" width="60"> |
-| **Progress** | <img src="samples/widgets/progress_1x1.png" width="60"> | <img src="samples/widgets/progress_1x2.png" width="60"> | <img src="samples/widgets/progress_2x1.png" width="60"> | <img src="samples/widgets/progress_2x2.png" width="60"> | <img src="samples/widgets/progress_2x3.png" width="60"> | <img src="samples/widgets/progress_3x3.png" width="60"> |
-| **Weather** | <img src="samples/widgets/weather_1x1.png" width="60"> | <img src="samples/widgets/weather_1x2.png" width="60"> | <img src="samples/widgets/weather_2x1.png" width="60"> | <img src="samples/widgets/weather_2x2.png" width="60"> | <img src="samples/widgets/weather_2x3.png" width="60"> | <img src="samples/widgets/weather_3x3.png" width="60"> |
-| **Status** | <img src="samples/widgets/status_1x1.png" width="60"> | <img src="samples/widgets/status_1x2.png" width="60"> | <img src="samples/widgets/status_2x1.png" width="60"> | <img src="samples/widgets/status_2x2.png" width="60"> | <img src="samples/widgets/status_2x3.png" width="60"> | <img src="samples/widgets/status_3x3.png" width="60"> |
-| **Chart** | <img src="samples/widgets/chart_1x1.png" width="60"> | <img src="samples/widgets/chart_1x2.png" width="60"> | <img src="samples/widgets/chart_2x1.png" width="60"> | <img src="samples/widgets/chart_2x2.png" width="60"> | <img src="samples/widgets/chart_2x3.png" width="60"> | <img src="samples/widgets/chart_3x3.png" width="60"> |
-
-### Widget Types
+## Widget Types
 
 | Type | Description |
 |------|-------------|
@@ -325,108 +111,43 @@ Widgets automatically adapt their layout based on cell size:
 | `multi_progress` | Multiple progress items |
 | `status_list` | Multiple status indicators |
 
+## Layout Types
+
+| Layout | Slots | Description |
+|--------|-------|-------------|
+| `grid_2x2` | 4 | 2x2 grid of equal widgets |
+| `grid_2x3` | 6 | 2 rows, 3 columns |
+| `hero` | 4 | Large hero + 3 footer widgets |
+| `split` | 2 | Left/right or top/bottom panels |
+| `three_column` | 3 | 3 vertical columns |
+
 ---
 
-## Layouts
+## Entity-Based Configuration
 
-### Available Layout Types
+GeekMagic uses **entity-based configuration** similar to WLED. Configure your display directly through Home Assistant entities on the device page.
 
-| Layout | Type | Slots | Description |
-|--------|------|-------|-------------|
-| Grid 2x2 | `grid_2x2` | 4 | 2x2 grid of equal widgets |
-| Grid 2x3 | `grid_2x3` | 6 | 2 rows, 3 columns |
-| Hero | `hero` | 4 | Large hero + 3 footer widgets |
-| Split | `split` | 2 | Left/right or top/bottom panels |
-| Three Column | `three_column` | 3 | 3 vertical columns |
+### Device Entities
 
-### Layout Examples
+| Entity | Type | Description |
+|--------|------|-------------|
+| `number.xxx_brightness` | Number | Display brightness (0-100) |
+| `number.xxx_refresh_interval` | Number | Update interval in seconds (5-300) |
+| `number.xxx_screen_count` | Number | Number of screens (1-10) |
+| `select.xxx_current_screen` | Select | Active screen selector |
+| `button.xxx_refresh_now` | Button | Force immediate display update |
+| `button.xxx_next_screen` | Button | Switch to next screen |
+| `sensor.xxx_status` | Sensor | Connection status |
 
-#### Grid 2x2
-<img src="samples/layouts/layout_grid_2x2.png" alt="Grid 2x2" width="180">
+### Per-Screen Entities
 
-4 equal slots in a 2x2 arrangement. Each slot is ~112x112px.
-
-```
-+-------+-------+
-|   0   |   1   |
-+-------+-------+
-|   2   |   3   |
-+-------+-------+
-```
-
-**Best for**: 4 medium widgets (gauges, entities)
-
-#### Grid 2x3
-<img src="samples/layouts/layout_grid_2x3.png" alt="Grid 2x3" width="180">
-
-6 slots in 2 rows, 3 columns. Each slot is ~75x112px.
-
-```
-+-----+-----+-----+
-|  0  |  1  |  2  |
-+-----+-----+-----+
-|  3  |  4  |  5  |
-+-----+-----+-----+
-```
-
-**Best for**: 6 entity values, compact dashboard
-
-#### Hero Layout
-<img src="samples/layouts/layout_hero.png" alt="Hero Layout" width="180">
-
-Large hero slot (70% height) + 3 footer widgets.
-
-```
-+-------------------+
-|                   |
-|    HERO (0)       |
-|                   |
-+-----+------+------+
-|  1  |   2  |   3  |
-+-----+------+------+
-```
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `footer_slots` | int | `3` | Number of footer widgets |
-| `hero_ratio` | float | `0.7` | Hero height ratio (0.5-0.8) |
-
-**Best for**: Weather + stats, clock + info, media player
-
-#### Split
-<img src="samples/layouts/layout_split_vertical.png" alt="Split Layout" width="180">
-
-Two panels (left/right or top/bottom).
-
-```
-Vertical (default):     Horizontal:
-+----------+----------+ +---------------------+
-|          |          | |         0           |
-|    0     |    1     | +---------------------+
-|          |          | |         1           |
-+----------+----------+ +---------------------+
-```
-
-**Best for**: Clock + chart, media + status, large widget pairs
-
-#### Three Column
-<img src="samples/layouts/layout_three_column.png" alt="Three Column" width="180">
-
-Three vertical columns with customizable widths.
-
-```
-+------+------+------+
-|      |      |      |
-|  0   |  1   |  2   |
-|      |      |      |
-+------+------+------+
-```
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `ratios` | tuple | `(0.33, 0.34, 0.33)` | Column width ratios |
-
-**Best for**: 3 gauges, 3 status lists, comparison view
+| Entity | Description |
+|--------|-------------|
+| `text.xxx_screen_N_name` | Screen name |
+| `select.xxx_screen_N_layout` | Layout type |
+| `select.xxx_screen_N_slot_M_widget` | Widget type for slot M |
+| `text.xxx_screen_N_slot_M_entity` | Entity ID for slot M |
+| `text.xxx_screen_N_slot_M_label` | Custom label for slot M |
 
 ---
 
@@ -440,8 +161,6 @@ Three vertical columns with customizable widths.
 | `geekmagic.next_screen` | Switch to the next screen |
 | `geekmagic.previous_screen` | Switch to the previous screen |
 
-> **Tip**: For most use cases, you can use the entity-based controls instead of services. For example, use the `button.xxx_next_screen` entity or `select.xxx_current_screen` entity for screen navigation.
-
 ## Device Compatibility
 
 Tested with:
@@ -452,23 +171,11 @@ Should work with any GeekMagic device that supports the `/doUpload` HTTP API.
 ## Development
 
 ```bash
-# Install dependencies
-uv sync
-
-# Run tests
-uv run pytest
-
-# Lint and type check
-uv run ruff check .
-uv run ty check
-
-# Run all checks (pre-commit)
-uv run pre-commit run --all-files
-
-# Generate sample images
-uv run python scripts/generate_samples.py
-uv run python scripts/generate_widget_samples.py
-uv run python scripts/generate_layout_samples.py
+uv sync                              # Install dependencies
+uv run pytest                        # Run tests
+uv run ruff check .                  # Lint
+uv run pre-commit run --all-files    # Run all checks
+uv run python scripts/generate_samples.py  # Generate samples
 ```
 
 ## License
