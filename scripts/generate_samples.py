@@ -47,53 +47,51 @@ def save_image(renderer: Renderer, img: Image.Image, name: str, output_dir: Path
 
 
 def generate_system_monitor(renderer: Renderer, output_dir: Path) -> None:
-    """Generate a system monitor dashboard with ring gauges."""
+    """Generate a system monitor dashboard with horizontal bars."""
     img, draw = renderer.create_canvas()
 
     # Title bar
     renderer.draw_text(
-        draw, "SYSTEM", (120, 12), font=renderer.font_small, color=COLOR_GRAY, anchor="mm"
+        draw, "SYSTEM", (120, 12), font=renderer.font_small_bold, color=COLOR_WHITE, anchor="mm"
     )
 
-    # Top section: CPU and Memory ring gauges
-    # CPU Ring (left)
-    cpu_center = (60, 70)
-    cpu_percent = 42
-    renderer.draw_ring_gauge(
-        draw, cpu_center, 35, cpu_percent, COLOR_TEAL, COLOR_DARK_GRAY, width=5
+    # Top section: CPU and Memory as horizontal bars
+    # CPU bar (left panel)
+    renderer.draw_panel(draw, (8, 28, 116, 80), COLOR_PANEL, radius=4)
+    renderer.draw_icon(draw, "cpu", (16, 36), size=14, color=COLOR_TEAL)
+    renderer.draw_text(
+        draw, "CPU", (36, 43), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
     )
+    cpu_percent = 42
     renderer.draw_text(
         draw,
         f"{cpu_percent}%",
-        cpu_center,
-        font=renderer.font_large,
+        (100, 43),
+        font=renderer.font_medium_bold,
         color=COLOR_WHITE,
-        anchor="mm",
+        anchor="rm",
     )
-    renderer.draw_text(
-        draw, "CPU", (60, 115), font=renderer.font_tiny, color=COLOR_GRAY, anchor="mm"
-    )
+    renderer.draw_bar(draw, (16, 58, 108, 70), cpu_percent, COLOR_TEAL, COLOR_DARK_GRAY)
 
-    # Memory Ring (right)
-    mem_center = (180, 70)
-    mem_percent = 68
-    renderer.draw_ring_gauge(
-        draw, mem_center, 35, mem_percent, COLOR_PURPLE, COLOR_DARK_GRAY, width=5
+    # Memory bar (right panel)
+    renderer.draw_panel(draw, (124, 28, 232, 80), COLOR_PANEL, radius=4)
+    renderer.draw_icon(draw, "memory", (132, 36), size=14, color=COLOR_PURPLE)
+    renderer.draw_text(
+        draw, "MEM", (152, 43), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
     )
+    mem_percent = 68
     renderer.draw_text(
         draw,
         f"{mem_percent}%",
-        mem_center,
-        font=renderer.font_large,
+        (216, 43),
+        font=renderer.font_medium_bold,
         color=COLOR_WHITE,
-        anchor="mm",
+        anchor="rm",
     )
-    renderer.draw_text(
-        draw, "MEM", (180, 115), font=renderer.font_tiny, color=COLOR_GRAY, anchor="mm"
-    )
+    renderer.draw_bar(draw, (132, 58, 224, 70), mem_percent, COLOR_PURPLE, COLOR_DARK_GRAY)
 
     # Middle section: Disk and Network bars
-    y_start = 135
+    y_start = 90
 
     # Disk usage bar
     renderer.draw_icon(draw, "disk", (12, y_start), size=14, color=COLOR_ORANGE)
@@ -102,16 +100,16 @@ def generate_system_monitor(renderer: Renderer, output_dir: Path) -> None:
     )
     renderer.draw_segmented_bar(
         draw,
-        (75, y_start + 2, 190, y_start + 12),
+        (70, y_start + 2, 185, y_start + 12),
         [(45, COLOR_ORANGE), (20, COLOR_GOLD)],
         COLOR_DARK_GRAY,
     )
     renderer.draw_text(
-        draw, "65%", (200, y_start + 7), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
+        draw, "65%", (195, y_start + 7), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
     )
 
     # Network bar
-    y_start += 22
+    y_start += 24
     renderer.draw_icon(draw, "network", (12, y_start), size=14, color=COLOR_LIME)
     renderer.draw_text(
         draw, "NET", (32, y_start + 7), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
@@ -142,14 +140,14 @@ def generate_system_monitor(renderer: Renderer, output_dir: Path) -> None:
         55,
     ]
     renderer.draw_mini_bars(
-        draw, (75, y_start, 190, y_start + 14), net_data, COLOR_LIME, bar_width=4, gap=2
+        draw, (70, y_start, 185, y_start + 14), net_data, COLOR_LIME, bar_width=4, gap=2
     )
     renderer.draw_text(
-        draw, "48Mb", (200, y_start + 7), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
+        draw, "48Mb", (195, y_start + 7), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
     )
 
     # Bottom section: Process list
-    y_start = 185
+    y_start = 140
 
     # Panel background
     renderer.draw_panel(draw, (8, y_start, 232, 232), COLOR_PANEL, radius=4)
@@ -158,8 +156,8 @@ def generate_system_monitor(renderer: Renderer, output_dir: Path) -> None:
     renderer.draw_text(
         draw,
         "TOP PROCESSES",
-        (16, y_start + 10),
-        font=renderer.font_tiny,
+        (16, y_start + 12),
+        font=renderer.font_small_bold,
         color=COLOR_GRAY,
         anchor="lm",
     )
@@ -169,19 +167,20 @@ def generate_system_monitor(renderer: Renderer, output_dir: Path) -> None:
         ("node", 12.4, COLOR_TEAL),
         ("python", 8.2, COLOR_PURPLE),
         ("chrome", 5.1, COLOR_LIME),
+        ("docker", 4.8, COLOR_BLUE),
     ]
 
     for i, (name, cpu, color) in enumerate(processes):
-        row_y = y_start + 22 + i * 14
+        row_y = y_start + 30 + i * 20
         renderer.draw_text(
-            draw, name, (16, row_y), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
+            draw, name, (16, row_y), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
         )
         bar_width = int(cpu * 8)
         renderer.draw_rounded_rect(
-            draw, (80, row_y - 4, 80 + bar_width, row_y + 4), radius=2, fill=color
+            draw, (80, row_y - 5, 80 + bar_width, row_y + 5), radius=3, fill=color
         )
         renderer.draw_text(
-            draw, f"{cpu}%", (200, row_y), font=renderer.font_tiny, color=color, anchor="lm"
+            draw, f"{cpu}%", (195, row_y), font=renderer.font_small, color=color, anchor="lm"
         )
 
     save_image(renderer, img, "01_system_monitor", output_dir)
@@ -341,40 +340,25 @@ def generate_weather(renderer: Renderer, output_dir: Path) -> None:
 
 
 def generate_server_stats(renderer: Renderer, output_dir: Path) -> None:
-    """Generate a server statistics dashboard."""
+    """Generate a server statistics dashboard with horizontal bars."""
     img, draw = renderer.create_canvas()
 
     # Header
     renderer.draw_text(
-        draw, "SERVER DASHBOARD", (120, 12), font=renderer.font_small, color=COLOR_TEAL, anchor="mm"
+        draw, "SERVER", (120, 12), font=renderer.font_small_bold, color=COLOR_WHITE, anchor="mm"
     )
 
-    # Large CPU metric with ring
-    cpu_center = (60, 65)
+    # CPU section with bar and sparkline
+    renderer.draw_panel(draw, (8, 28, 232, 85), COLOR_PANEL, radius=4)
+    renderer.draw_icon(draw, "cpu", (16, 36), size=14, color=COLOR_TEAL)
+    renderer.draw_text(
+        draw, "CPU", (36, 43), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+    )
     cpu = 73
-    renderer.draw_ring_gauge(draw, cpu_center, 32, cpu, COLOR_TEAL, COLOR_DARK_GRAY, width=6)
     renderer.draw_text(
-        draw, f"{cpu}", cpu_center, font=renderer.font_large, color=COLOR_WHITE, anchor="mm"
+        draw, f"{cpu}%", (220, 43), font=renderer.font_large, color=COLOR_WHITE, anchor="rm"
     )
-    renderer.draw_text(
-        draw, "CPU %", (60, 105), font=renderer.font_tiny, color=COLOR_GRAY, anchor="mm"
-    )
-
-    # Side metrics
-    metrics = [
-        ("LOAD", "2.4", COLOR_LIME),
-        ("TEMP", "58\u00b0C", COLOR_ORANGE),
-        ("UPTIME", "14d", COLOR_PURPLE),
-    ]
-
-    for i, (label, value, color) in enumerate(metrics):
-        y = 35 + i * 28
-        renderer.draw_text(
-            draw, label, (130, y), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
-        )
-        renderer.draw_text(
-            draw, value, (130, y + 12), font=renderer.font_medium, color=color, anchor="lm"
-        )
+    renderer.draw_bar(draw, (16, 55, 224, 65), cpu, COLOR_TEAL, COLOR_DARK_GRAY)
 
     # Sparkline for history
     cpu_history = [
@@ -400,104 +384,116 @@ def generate_server_stats(renderer: Renderer, output_dir: Path) -> None:
         75,
         73,
     ]
-    renderer.draw_panel(draw, (125, 100, 230, 115), COLOR_PANEL, radius=2)
-    renderer.draw_sparkline(draw, (128, 102, 227, 113), cpu_history, COLOR_TEAL, fill=True)
+    renderer.draw_sparkline(draw, (16, 70, 224, 80), cpu_history, COLOR_TEAL, fill=True)
+
+    # Metrics grid (2x2)
+    metrics = [
+        ("LOAD", "2.4", COLOR_LIME),
+        ("UPTIME", "14d", COLOR_PURPLE),
+        ("TEMP", "58°C", COLOR_ORANGE),
+        ("CONN", "1,247", COLOR_BLUE),
+    ]
+
+    for i, (label, value, color) in enumerate(metrics):
+        col = i % 2
+        row = i // 2
+        x = 16 + col * 112
+        y = 95 + row * 32
+        renderer.draw_text(
+            draw, label, (x, y), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+        )
+        renderer.draw_text(
+            draw, value, (x, y + 14), font=renderer.font_medium_bold, color=color, anchor="lm"
+        )
 
     # Resource bars section
-    y_section = 125
+    y_section = 160
     renderer.draw_text(
-        draw, "RESOURCES", (16, y_section), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+        draw,
+        "RESOURCES",
+        (16, y_section),
+        font=renderer.font_small_bold,
+        color=COLOR_GRAY,
+        anchor="lm",
     )
 
     resources = [
         ("MEM", 68, COLOR_PURPLE, "5.4/8 GB"),
         ("DISK", 45, COLOR_ORANGE, "180/400 GB"),
-        ("SWAP", 12, COLOR_BLUE, "0.5/4 GB"),
     ]
 
-    for i, (name, percent, color, _detail) in enumerate(resources):
-        y = y_section + 18 + i * 24
+    for i, (name, percent, color, detail) in enumerate(resources):
+        y = y_section + 18 + i * 22
         renderer.draw_text(
             draw, name, (16, y + 5), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
         )
-        renderer.draw_rounded_rect(draw, (50, y, 180, y + 10), radius=2, fill=COLOR_DARK_GRAY)
-        bar_width = int(130 * percent / 100)
+        renderer.draw_rounded_rect(draw, (50, y, 170, y + 10), radius=2, fill=COLOR_DARK_GRAY)
+        bar_width = int(120 * percent / 100)
         renderer.draw_rounded_rect(draw, (50, y, 50 + bar_width, y + 10), radius=2, fill=color)
         renderer.draw_text(
-            draw, f"{percent}%", (188, y + 5), font=renderer.font_tiny, color=color, anchor="lm"
+            draw, detail, (180, y + 5), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
         )
 
-    # Network I/O
-    y_net = 210
+    # Network I/O with geometric arrows
+    y_net = 215
+    renderer.draw_icon(draw, "arrow_up", (16, y_net - 2), size=10, color=COLOR_LIME)
     renderer.draw_text(
-        draw, "\u25b2", (16, y_net), font=renderer.font_tiny, color=COLOR_LIME, anchor="lm"
+        draw, "125 MB/s", (30, y_net + 3), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
     )
+    renderer.draw_icon(draw, "arrow_down", (120, y_net - 2), size=10, color=COLOR_RED)
     renderer.draw_text(
-        draw, "125 MB/s", (28, y_net), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
-    )
-    renderer.draw_text(
-        draw, "\u25bc", (100, y_net), font=renderer.font_tiny, color=COLOR_RED, anchor="lm"
-    )
-    renderer.draw_text(
-        draw, "48 MB/s", (112, y_net), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
-    )
-
-    # Connections (right-aligned to fit)
-    renderer.draw_text(
-        draw, "CONN: 1,247", (224, y_net), font=renderer.font_tiny, color=COLOR_GRAY, anchor="rm"
+        draw, "48 MB/s", (134, y_net + 3), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
     )
 
     save_image(renderer, img, "04_server_stats", output_dir)
 
 
 def generate_media_player(renderer: Renderer, output_dir: Path) -> None:
-    """Generate a media player display."""
+    """Generate a media player display with geometric icons."""
     img, draw = renderer.create_canvas()
 
-    # Album art placeholder (gradient)
+    # Album art placeholder (gradient with music note)
     for i in range(80):
         grad_color = renderer.blend_color(COLOR_PURPLE, COLOR_TEAL, i / 80)
         renderer.draw_line(draw, [(80 + i, 20), (80 + i, 100)], fill=grad_color, width=1)
+    # Music note icon in center of album art
+    renderer.draw_icon(draw, "music", (112, 52), size=16, color=COLOR_WHITE)
 
     # Track info
     renderer.draw_text(
         draw, "NOW PLAYING", (120, 115), font=renderer.font_tiny, color=COLOR_GRAY, anchor="mm"
     )
     renderer.draw_text(
-        draw, "Bohemian", (120, 135), font=renderer.font_medium, color=COLOR_WHITE, anchor="mm"
+        draw,
+        "Bohemian Rhapsody",
+        (120, 138),
+        font=renderer.font_medium_bold,
+        color=COLOR_WHITE,
+        anchor="mm",
     )
     renderer.draw_text(
-        draw, "Rhapsody", (120, 152), font=renderer.font_medium, color=COLOR_WHITE, anchor="mm"
-    )
-    renderer.draw_text(
-        draw, "Queen", (120, 172), font=renderer.font_small, color=COLOR_TEAL, anchor="mm"
+        draw, "Queen", (120, 160), font=renderer.font_small, color=COLOR_TEAL, anchor="mm"
     )
 
     # Progress bar
     progress = 65
-    renderer.draw_rounded_rect(draw, (20, 192, 220, 198), radius=3, fill=COLOR_DARK_GRAY)
+    renderer.draw_rounded_rect(draw, (20, 180, 220, 188), radius=4, fill=COLOR_DARK_GRAY)
     bar_width = int(200 * progress / 100)
-    renderer.draw_rounded_rect(draw, (20, 192, 20 + bar_width, 198), radius=3, fill=COLOR_TEAL)
+    renderer.draw_rounded_rect(draw, (20, 180, 20 + bar_width, 188), radius=4, fill=COLOR_TEAL)
 
     # Time labels
     renderer.draw_text(
-        draw, "2:45", (20, 208), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
+        draw, "2:45", (20, 198), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
     )
     renderer.draw_text(
-        draw, "5:54", (220, 208), font=renderer.font_tiny, color=COLOR_GRAY, anchor="rm"
+        draw, "5:54", (220, 198), font=renderer.font_tiny, color=COLOR_GRAY, anchor="rm"
     )
 
-    # Controls
-    controls_y = 225
-    renderer.draw_text(
-        draw, "\u23ee", (70, controls_y), font=renderer.font_regular, color=COLOR_GRAY, anchor="mm"
-    )
-    renderer.draw_text(
-        draw, "\u23f8", (120, controls_y), font=renderer.font_large, color=COLOR_WHITE, anchor="mm"
-    )
-    renderer.draw_text(
-        draw, "\u23ed", (170, controls_y), font=renderer.font_regular, color=COLOR_GRAY, anchor="mm"
-    )
+    # Controls with geometric icons
+    controls_y = 218
+    renderer.draw_icon(draw, "skip_prev", (60, controls_y), size=18, color=COLOR_GRAY)
+    renderer.draw_icon(draw, "pause", (107, controls_y - 3), size=24, color=COLOR_WHITE)
+    renderer.draw_icon(draw, "skip_next", (160, controls_y), size=18, color=COLOR_GRAY)
 
     save_image(renderer, img, "05_media_player", output_dir)
 
@@ -612,66 +608,88 @@ def generate_energy_monitor(renderer: Renderer, output_dir: Path) -> None:
 
 
 def generate_fitness(renderer: Renderer, output_dir: Path) -> None:
-    """Generate a fitness tracking dashboard."""
+    """Generate a fitness tracking dashboard with horizontal progress bars."""
     img, draw = renderer.create_canvas()
 
-    # Activity rings (stacked)
-    center = (70, 80)
-
-    # Move ring (outer)
-    renderer.draw_ring_gauge(
-        draw, center, 50, 85, COLOR_PINK, renderer.dim_color(COLOR_PINK), width=8
-    )
-    # Exercise ring (middle)
-    renderer.draw_ring_gauge(
-        draw, center, 38, 60, COLOR_LIME, renderer.dim_color(COLOR_LIME), width=8
-    )
-    # Stand ring (inner)
-    renderer.draw_ring_gauge(
-        draw, center, 26, 100, COLOR_TEAL, renderer.dim_color(COLOR_TEAL), width=8
-    )
-
-    # Center icon
+    # Header with heart rate
     renderer.draw_text(
-        draw, "\u2665", center, font=renderer.font_large, color=COLOR_PINK, anchor="mm"
+        draw, "FITNESS", (16, 14), font=renderer.font_small_bold, color=COLOR_WHITE, anchor="lm"
+    )
+    renderer.draw_icon(draw, "heart", (180, 6), size=14, color=COLOR_PINK)
+    renderer.draw_text(
+        draw, "72 bpm", (200, 14), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
     )
 
-    # Ring labels
-    labels = [
-        ("MOVE", "680/800 CAL", COLOR_PINK),
-        ("EXERCISE", "24/40 MIN", COLOR_LIME),
-        ("STAND", "12/12 HR", COLOR_TEAL),
+    # Activity progress bars (replacing Apple Watch rings)
+    activities = [
+        ("MOVE", 680, 800, "CAL", COLOR_PINK, 85),
+        ("EXERCISE", 24, 40, "MIN", COLOR_LIME, 60),
+        ("STAND", 12, 12, "HR", COLOR_TEAL, 100),
     ]
 
-    for i, (label, value, color) in enumerate(labels):
-        y = 25 + i * 36
-        renderer.draw_text(draw, label, (140, y), font=renderer.font_tiny, color=color, anchor="lm")
+    for i, (label, current, goal, unit, color, percent) in enumerate(activities):
+        y = 35 + i * 45
+
+        # Activity panel
+        renderer.draw_panel(draw, (8, y, 232, y + 40), COLOR_PANEL, radius=4)
+
+        # Icon placeholder (colored dot for activity type)
+        renderer.draw_ellipse(draw, (16, y + 12, 26, y + 22), fill=color)
+
+        # Label and progress
         renderer.draw_text(
-            draw, value, (140, y + 12), font=renderer.font_small, color=COLOR_WHITE, anchor="lm"
+            draw, label, (34, y + 10), font=renderer.font_small_bold, color=color, anchor="lm"
+        )
+        renderer.draw_text(
+            draw,
+            f"{current}/{goal} {unit}",
+            (34, y + 26),
+            font=renderer.font_tiny,
+            color=COLOR_GRAY,
+            anchor="lm",
         )
 
-    # Stats section
-    y_stats = 145
+        # Percentage on right
+        renderer.draw_text(
+            draw,
+            f"{percent}%",
+            (220, y + 18),
+            font=renderer.font_medium_bold,
+            color=COLOR_WHITE,
+            anchor="rm",
+        )
+
+        # Progress bar
+        renderer.draw_bar(draw, (120, y + 28, 220, y + 35), percent, color, COLOR_DARK_GRAY)
+
+    # Stats section (simpler, with dots instead of emoji)
+    y_stats = 175
     renderer.draw_panel(draw, (8, y_stats, 232, 232), COLOR_PANEL, radius=4)
 
     stats = [
-        ("STEPS", "8,542", "\U0001f6b6"),
-        ("DIST", "5.2 km", "\U0001f4cd"),
-        ("FLOORS", "14", "\U0001f3e2"),
-        ("HR", "72 bpm", "\u2665"),
+        ("STEPS", "8,542", COLOR_PINK),
+        ("DISTANCE", "5.2 km", COLOR_LIME),
+        ("FLOORS", "14", COLOR_TEAL),
+        ("ACTIVE", "45 min", COLOR_PURPLE),
     ]
 
-    for i, (label, value, icon) in enumerate(stats):
-        x = 16 + (i % 2) * 110
-        y = y_stats + 12 + (i // 2) * 38
+    for i, (label, value, color) in enumerate(stats):
+        col = i % 2
+        row = i // 2
+        x = 16 + col * 112
+        y = y_stats + 10 + row * 28
+
+        renderer.draw_ellipse(draw, (x, y + 4, x + 6, y + 10), fill=color)
         renderer.draw_text(
-            draw, icon, (x, y + 8), font=renderer.font_regular, color=COLOR_WHITE, anchor="lm"
+            draw, label, (x + 12, y), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
         )
         renderer.draw_text(
-            draw, label, (x + 25, y), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
-        )
-        renderer.draw_text(
-            draw, value, (x + 25, y + 14), font=renderer.font_medium, color=COLOR_WHITE, anchor="lm"
+            draw,
+            value,
+            (x + 12, y + 14),
+            font=renderer.font_medium_bold,
+            color=COLOR_WHITE,
+            anchor="lm",
         )
 
     save_image(renderer, img, "07_fitness", output_dir)
@@ -861,6 +879,243 @@ def generate_network_monitor(renderer: Renderer, output_dir: Path) -> None:
     save_image(renderer, img, "09_network_monitor", output_dir)
 
 
+def generate_thermostat(renderer: Renderer, output_dir: Path) -> None:
+    """Generate a climate control dashboard with arc gauge."""
+    img, draw = renderer.create_canvas()
+
+    # Header
+    renderer.draw_text(
+        draw, "CLIMATE", (120, 14), font=renderer.font_small_bold, color=COLOR_WHITE, anchor="mm"
+    )
+
+    # Large temperature arc gauge
+    renderer.draw_arc(draw, (40, 35, 200, 145), 72, COLOR_ORANGE, COLOR_DARK_GRAY, width=12)
+
+    # Target temperature in center
+    renderer.draw_text(
+        draw, "22", (120, 85), font=renderer.font_huge, color=COLOR_WHITE, anchor="mm"
+    )
+    renderer.draw_text(
+        draw, "°C", (160, 75), font=renderer.font_medium, color=COLOR_GRAY, anchor="lm"
+    )
+
+    # Up/down controls
+    renderer.draw_icon(draw, "arrow_up", (85, 130), size=16, color=COLOR_GRAY)
+    renderer.draw_text(
+        draw, "TARGET", (120, 138), font=renderer.font_tiny, color=COLOR_GRAY, anchor="mm"
+    )
+    renderer.draw_icon(draw, "arrow_down", (140, 130), size=16, color=COLOR_GRAY)
+
+    # Current conditions panel
+    renderer.draw_panel(draw, (8, 155, 232, 205), COLOR_PANEL, radius=4)
+
+    conditions = [
+        ("CURRENT", "21.5°C", COLOR_TEAL),
+        ("HUMIDITY", "58%", COLOR_BLUE),
+        ("MODE", "Heating", COLOR_ORANGE),
+    ]
+
+    for i, (label, value, color) in enumerate(conditions):
+        x = 20 + i * 72
+        renderer.draw_text(
+            draw, label, (x, 165), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+        )
+        renderer.draw_text(
+            draw, value, (x, 182), font=renderer.font_small, color=color, anchor="lm"
+        )
+
+    # Room temperatures footer
+    renderer.draw_text(
+        draw, "ROOMS", (16, 215), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+    )
+
+    rooms = [
+        ("Living", "22°", COLOR_LIME),
+        ("Bed", "19°", COLOR_TEAL),
+        ("Bath", "24°", COLOR_ORANGE),
+    ]
+
+    for i, (room, temp, color) in enumerate(rooms):
+        x = 70 + i * 58
+        renderer.draw_ellipse(draw, (x, 216, x + 6, 222), fill=color)
+        renderer.draw_text(
+            draw,
+            f"{room} {temp}",
+            (x + 10, 219),
+            font=renderer.font_tiny,
+            color=COLOR_WHITE,
+            anchor="lm",
+        )
+
+    save_image(renderer, img, "10_thermostat", output_dir)
+
+
+def generate_batteries(renderer: Renderer, output_dir: Path) -> None:
+    """Generate a battery status dashboard with vertical battery bars."""
+    img, draw = renderer.create_canvas()
+
+    # Header
+    renderer.draw_icon(draw, "battery", (10, 6), size=16, color=COLOR_LIME)
+    renderer.draw_text(
+        draw, "BATTERIES", (32, 14), font=renderer.font_small_bold, color=COLOR_WHITE, anchor="lm"
+    )
+
+    # Battery grid
+    batteries = [
+        ("iPhone", 87, COLOR_LIME),
+        ("iPad", 42, COLOR_GOLD),
+        ("Watch", 15, COLOR_RED),
+        ("AirPods", 100, COLOR_LIME),
+    ]
+
+    for i, (name, percent, color) in enumerate(batteries):
+        x = 16 + i * 56
+        y_top = 35
+
+        # Battery outline
+        renderer.draw_rounded_rect(
+            draw, (x, y_top, x + 44, y_top + 90), radius=4, outline=COLOR_GRAY
+        )
+        # Battery cap
+        renderer.draw_rounded_rect(
+            draw, (x + 14, y_top - 4, x + 30, y_top), radius=2, fill=COLOR_GRAY
+        )
+
+        # Battery fill (from bottom up)
+        fill_height = int(82 * percent / 100)
+        if fill_height > 0:
+            fill_y = y_top + 86 - fill_height
+            renderer.draw_rounded_rect(
+                draw, (x + 4, fill_y, x + 40, y_top + 86), radius=2, fill=color
+            )
+
+        # Percentage
+        renderer.draw_text(
+            draw,
+            f"{percent}%",
+            (x + 22, y_top + 45),
+            font=renderer.font_small_bold,
+            color=COLOR_WHITE,
+            anchor="mm",
+        )
+
+        # Device name
+        renderer.draw_text(
+            draw,
+            name,
+            (x + 22, y_top + 100),
+            font=renderer.font_tiny,
+            color=COLOR_WHITE,
+            anchor="mm",
+        )
+
+    # Warning panel for low battery
+    renderer.draw_panel(draw, (8, 155, 232, 195), COLOR_PANEL, radius=4)
+    renderer.draw_icon(draw, "warning", (16, 165), size=16, color=COLOR_RED)
+    renderer.draw_text(
+        draw, "LOW BATTERY", (40, 168), font=renderer.font_small_bold, color=COLOR_RED, anchor="lm"
+    )
+    renderer.draw_text(
+        draw,
+        "Watch needs charging soon",
+        (40, 182),
+        font=renderer.font_tiny,
+        color=COLOR_GRAY,
+        anchor="lm",
+    )
+
+    # Last updated
+    renderer.draw_text(
+        draw,
+        "Updated 2 min ago",
+        (120, 215),
+        font=renderer.font_tiny,
+        color=COLOR_GRAY,
+        anchor="mm",
+    )
+
+    save_image(renderer, img, "11_batteries", output_dir)
+
+
+def generate_security(renderer: Renderer, output_dir: Path) -> None:
+    """Generate a home security dashboard with sensor status."""
+    img, draw = renderer.create_canvas()
+
+    # Header with status
+    renderer.draw_icon(draw, "lock", (10, 6), size=16, color=COLOR_LIME)
+    renderer.draw_text(
+        draw, "SECURITY", (32, 14), font=renderer.font_small_bold, color=COLOR_WHITE, anchor="lm"
+    )
+    renderer.draw_ellipse(draw, (195, 10, 205, 20), fill=COLOR_LIME)
+    renderer.draw_text(
+        draw, "ARMED", (210, 15), font=renderer.font_tiny, color=COLOR_LIME, anchor="lm"
+    )
+
+    # Doors section
+    renderer.draw_panel(draw, (8, 28, 232, 105), COLOR_PANEL, radius=4)
+    renderer.draw_text(
+        draw, "DOORS", (16, 40), font=renderer.font_small_bold, color=COLOR_GRAY, anchor="lm"
+    )
+
+    doors = [
+        ("Front Door", "LOCKED", True, COLOR_LIME),
+        ("Back Door", "LOCKED", True, COLOR_LIME),
+        ("Garage", "OPEN", False, COLOR_RED),
+    ]
+
+    for i, (name, status, _locked, color) in enumerate(doors):
+        y = 55 + i * 16
+        renderer.draw_ellipse(draw, (16, y, 22, y + 6), fill=color)
+        renderer.draw_text(
+            draw, name, (30, y + 3), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
+        )
+        renderer.draw_text(
+            draw, status, (140, y + 3), font=renderer.font_tiny, color=color, anchor="lm"
+        )
+
+    # Motion section
+    renderer.draw_panel(draw, (8, 112, 232, 180), COLOR_PANEL, radius=4)
+    renderer.draw_text(
+        draw, "MOTION", (16, 124), font=renderer.font_small_bold, color=COLOR_GRAY, anchor="lm"
+    )
+
+    motions = [
+        ("Living Room", "Clear", False, COLOR_GRAY),
+        ("Kitchen", "Clear", False, COLOR_GRAY),
+        ("Backyard", "Detected", True, COLOR_ORANGE),
+    ]
+
+    for i, (area, status, detected, color) in enumerate(motions):
+        y = 140 + i * 14
+        if detected:
+            renderer.draw_icon(draw, "motion", (16, y - 2), size=10, color=color)
+        else:
+            renderer.draw_ellipse(draw, (18, y, 24, y + 6), fill=color)
+        renderer.draw_text(
+            draw, area, (30, y + 3), font=renderer.font_tiny, color=COLOR_WHITE, anchor="lm"
+        )
+        renderer.draw_text(
+            draw, status, (140, y + 3), font=renderer.font_tiny, color=color, anchor="lm"
+        )
+
+    # Last event panel
+    renderer.draw_panel(draw, (8, 188, 232, 232), COLOR_PANEL, radius=4)
+    renderer.draw_icon(draw, "bell", (16, 200), size=14, color=COLOR_ORANGE)
+    renderer.draw_text(
+        draw, "LAST EVENT", (36, 200), font=renderer.font_tiny, color=COLOR_GRAY, anchor="lm"
+    )
+    renderer.draw_text(
+        draw,
+        "Backyard motion detected",
+        (36, 215),
+        font=renderer.font_small,
+        color=COLOR_WHITE,
+        anchor="lm",
+    )
+
+    save_image(renderer, img, "12_security", output_dir)
+
+
 def main() -> None:
     """Generate all sample renders."""
     output_dir = Path(__file__).parent.parent / "samples"
@@ -870,7 +1125,7 @@ def main() -> None:
     for old_file in output_dir.glob("*.png"):
         old_file.unlink()
 
-    print("Generating sample renders with Cairo...")
+    print("Generating sample renders...")
     print(f"Output directory: {output_dir}\n")
 
     renderer = Renderer()
@@ -885,8 +1140,11 @@ def main() -> None:
     generate_fitness(renderer, output_dir)
     generate_clock_dashboard(renderer, output_dir)
     generate_network_monitor(renderer, output_dir)
+    generate_thermostat(renderer, output_dir)
+    generate_batteries(renderer, output_dir)
+    generate_security(renderer, output_dir)
 
-    print(f"\n+ Generated 9 sample images in {output_dir}/")
+    print(f"\n+ Generated 12 sample images in {output_dir}/")
 
 
 if __name__ == "__main__":
