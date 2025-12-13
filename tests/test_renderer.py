@@ -79,8 +79,11 @@ class TestRenderer:
         # Draw a filled rectangle
         renderer.draw_rect(draw, (10, 10, 50, 50), fill=COLOR_WHITE)
 
+        # Finalize to composite Cairo and PIL layers
+        final_img = renderer.finalize(img)
+
         # Check that the rectangle was drawn
-        assert img.getpixel((30, 30)) == COLOR_WHITE
+        assert final_img.getpixel((30, 30)) == COLOR_WHITE
 
     def test_draw_rect_outline(self):
         """Test drawing rectangle with outline."""
@@ -89,8 +92,11 @@ class TestRenderer:
 
         renderer.draw_rect(draw, (10, 10, 50, 50), outline=COLOR_CYAN, width=2)
 
+        # Finalize to composite Cairo and PIL layers
+        final_img = renderer.finalize(img)
+
         # Outline should be at edge
-        assert img.getpixel((10, 30)) == COLOR_CYAN
+        assert final_img.getpixel((10, 30)) == COLOR_CYAN
 
     def test_draw_bar(self):
         """Test drawing progress bar."""
@@ -102,10 +108,13 @@ class TestRenderer:
             draw, rect=(10, 10, 110, 20), percent=50, color=COLOR_CYAN, background=(50, 50, 50)
         )
 
+        # Finalize to composite Cairo and PIL layers
+        final_img = renderer.finalize(img)
+
         # Check left side (filled part)
-        assert img.getpixel((30, 15)) == COLOR_CYAN
+        assert final_img.getpixel((30, 15)) == COLOR_CYAN
         # Check right side (background part)
-        assert img.getpixel((90, 15)) == (50, 50, 50)
+        assert final_img.getpixel((90, 15)) == (50, 50, 50)
 
     def test_draw_bar_zero_percent(self):
         """Test drawing 0% bar."""
@@ -117,9 +126,12 @@ class TestRenderer:
             draw, rect=(10, 10, 110, 20), percent=0, color=COLOR_CYAN, background=background
         )
 
+        # Finalize to composite Cairo and PIL layers
+        final_img = renderer.finalize(img)
+
         # All should be background color
-        assert img.getpixel((30, 15)) == background
-        assert img.getpixel((90, 15)) == background
+        assert final_img.getpixel((30, 15)) == background
+        assert final_img.getpixel((90, 15)) == background
 
     def test_draw_bar_hundred_percent(self):
         """Test drawing 100% bar."""
@@ -130,9 +142,12 @@ class TestRenderer:
             draw, rect=(10, 10, 110, 20), percent=100, color=COLOR_CYAN, background=(50, 50, 50)
         )
 
+        # Finalize to composite Cairo and PIL layers
+        final_img = renderer.finalize(img)
+
         # All should be filled
-        assert img.getpixel((30, 15)) == COLOR_CYAN
-        assert img.getpixel((90, 15)) == COLOR_CYAN
+        assert final_img.getpixel((30, 15)) == COLOR_CYAN
+        assert final_img.getpixel((90, 15)) == COLOR_CYAN
 
     def test_draw_sparkline(self):
         """Test drawing sparkline chart."""
