@@ -26,7 +26,7 @@ from custom_components.geekmagic.const import (
     COLOR_TEAL,
     COLOR_WHITE,
 )
-from custom_components.geekmagic.layouts.grid import Grid2x2, Grid2x3, Grid3x3
+from custom_components.geekmagic.layouts.grid import Grid2x2, Grid2x3
 from custom_components.geekmagic.layouts.hero import HeroLayout
 from custom_components.geekmagic.layouts.split import SplitLayout
 from custom_components.geekmagic.renderer import Renderer
@@ -146,7 +146,7 @@ def generate_smart_home(renderer: Renderer, output_dir: Path) -> None:
             entity_id="light.living_room",
             label="Lights",
             color=COLOR_GOLD,
-            options={"show_name": True},
+            options={"show_name": True, "icon": "lightbulb", "show_panel": True},
         )
     )
     layout.set_widget(0, light1)
@@ -159,7 +159,7 @@ def generate_smart_home(renderer: Renderer, output_dir: Path) -> None:
             entity_id="light.kitchen",
             label="Kitchen",
             color=COLOR_GRAY,
-            options={"show_name": True},
+            options={"show_name": True, "icon": "lightbulb", "show_panel": True},
         )
     )
     layout.set_widget(1, light2)
@@ -172,7 +172,7 @@ def generate_smart_home(renderer: Renderer, output_dir: Path) -> None:
             entity_id="climate.thermostat",
             label="AC",
             color=COLOR_CYAN,
-            options={"show_name": True},
+            options={"show_name": True, "show_panel": True},
         )
     )
     layout.set_widget(2, ac)
@@ -185,7 +185,7 @@ def generate_smart_home(renderer: Renderer, output_dir: Path) -> None:
             slot=3,
             entity_id="sensor.temperature",
             color=COLOR_ORANGE,
-            options={"show_name": True, "show_unit": True},
+            options={"show_name": True, "show_unit": True, "show_panel": True},
         )
     )
     layout.set_widget(3, temp)
@@ -197,7 +197,7 @@ def generate_smart_home(renderer: Renderer, output_dir: Path) -> None:
             slot=4,
             entity_id="sensor.humidity",
             color=COLOR_CYAN,
-            options={"show_name": True, "show_unit": True},
+            options={"show_name": True, "show_unit": True, "icon": "drop", "show_panel": True},
         )
     )
     layout.set_widget(4, humidity)
@@ -210,7 +210,7 @@ def generate_smart_home(renderer: Renderer, output_dir: Path) -> None:
             entity_id="lock.front_door",
             label="Door",
             color=COLOR_LIME,
-            options={"show_name": True},
+            options={"show_name": True, "icon": "lock", "show_panel": True},
         )
     )
     layout.set_widget(5, lock)
@@ -246,11 +246,12 @@ def generate_weather(renderer: Renderer, output_dir: Path) -> None:
 
 
 def generate_server_stats(renderer: Renderer, output_dir: Path) -> None:
-    """Generate server stats dashboard using Grid3x3 layout."""
+    """Generate server stats dashboard using Grid2x3 layout."""
     hass = MockHass()
     create_server_stats_states(hass)
 
-    layout = Grid3x3(padding=6, gap=6)
+    # Use 2x3 grid for better spacing (6 widgets instead of 9)
+    layout = Grid2x3(padding=8, gap=8)
     img, draw = renderer.create_canvas()
 
     # Row 1: CPU, Memory, Disk
@@ -290,64 +291,42 @@ def generate_server_stats(renderer: Renderer, output_dir: Path) -> None:
     )
     layout.set_widget(2, disk)
 
-    # Row 2: Load, Temp, Uptime
-    load = EntityWidget(
-        WidgetConfig(
-            widget_type="entity",
-            slot=3,
-            entity_id="sensor.server_load",
-            label="Load",
-            color=COLOR_CYAN,
-        )
-    )
-    layout.set_widget(3, load)
-
+    # Row 2: Temp, Upload, Download
     temp = EntityWidget(
         WidgetConfig(
             widget_type="entity",
-            slot=4,
+            slot=3,
             entity_id="sensor.server_temp",
             label="Temp",
             color=COLOR_RED,
+            options={"show_panel": True},
         )
     )
-    layout.set_widget(4, temp)
+    layout.set_widget(3, temp)
 
-    uptime = EntityWidget(
-        WidgetConfig(
-            widget_type="entity",
-            slot=5,
-            entity_id="sensor.server_uptime",
-            label="Uptime",
-            color=COLOR_LIME,
-        )
-    )
-    layout.set_widget(5, uptime)
-
-    # Row 3: Upload, Download, empty
     upload = EntityWidget(
         WidgetConfig(
             widget_type="entity",
-            slot=6,
+            slot=4,
             entity_id="sensor.server_upload",
             label="Upload",
             color=COLOR_LIME,
-            options={"icon": "arrow_up"},
+            options={"icon": "arrow_up", "show_panel": True},
         )
     )
-    layout.set_widget(6, upload)
+    layout.set_widget(4, upload)
 
     download = EntityWidget(
         WidgetConfig(
             widget_type="entity",
-            slot=7,
+            slot=5,
             entity_id="sensor.server_download",
-            label="Download",
+            label="Down",
             color=COLOR_RED,
-            options={"icon": "arrow_down"},
+            options={"icon": "arrow_down", "show_panel": True},
         )
     )
-    layout.set_widget(7, download)
+    layout.set_widget(5, download)
 
     layout.render(renderer, draw, hass)  # type: ignore[arg-type]
     save_image(renderer, img, "04_server_stats", output_dir)
@@ -393,7 +372,7 @@ def generate_energy_monitor(renderer: Renderer, output_dir: Path) -> None:
             entity_id="sensor.energy_consumption",
             label="Using",
             color=COLOR_ORANGE,
-            options={"icon": "bolt"},
+            options={"icon": "bolt", "show_panel": True},
         )
     )
     layout.set_widget(0, consumption)
@@ -406,7 +385,7 @@ def generate_energy_monitor(renderer: Renderer, output_dir: Path) -> None:
             entity_id="sensor.solar_production",
             label="Solar",
             color=COLOR_GOLD,
-            options={"icon": "sun"},
+            options={"icon": "sun", "show_panel": True},
         )
     )
     layout.set_widget(1, solar)
@@ -419,7 +398,7 @@ def generate_energy_monitor(renderer: Renderer, output_dir: Path) -> None:
             entity_id="sensor.grid_export",
             label="Export",
             color=COLOR_LIME,
-            options={"icon": "power"},
+            options={"icon": "power", "show_panel": True},
         )
     )
     layout.set_widget(2, grid)
@@ -432,6 +411,7 @@ def generate_energy_monitor(renderer: Renderer, output_dir: Path) -> None:
             entity_id="sensor.energy_today",
             label="Today",
             color=COLOR_CYAN,
+            options={"icon": "bolt", "show_panel": True},
         )
     )
     layout.set_widget(3, today)
@@ -485,14 +465,15 @@ def generate_fitness(renderer: Renderer, output_dir: Path) -> None:
     )
     layout.set_widget(0, progress)
 
-    # Footer: Steps, Distance, Heart Rate
+    # Footer: Steps, Distance, Heart Rate (no units to save space)
     steps = EntityWidget(
         WidgetConfig(
             widget_type="entity",
             slot=1,
             entity_id="sensor.steps",
+            label="Steps",
             color=COLOR_WHITE,
-            options={"show_name": True},
+            options={"show_name": True, "show_unit": False},
         )
     )
     layout.set_widget(1, steps)
@@ -502,8 +483,9 @@ def generate_fitness(renderer: Renderer, output_dir: Path) -> None:
             widget_type="entity",
             slot=2,
             entity_id="sensor.distance",
+            label="Dist",
             color=COLOR_WHITE,
-            options={"show_name": True},
+            options={"show_name": True, "show_unit": False},
         )
     )
     layout.set_widget(2, distance)
@@ -513,8 +495,9 @@ def generate_fitness(renderer: Renderer, output_dir: Path) -> None:
             widget_type="entity",
             slot=3,
             entity_id="sensor.heart_rate",
+            label="BPM",
             color=COLOR_RED,
-            options={"show_name": True, "icon": "heart"},
+            options={"show_name": True, "show_unit": False, "icon": "heart"},
         )
     )
     layout.set_widget(3, heart)
@@ -597,7 +580,7 @@ def generate_network_monitor(renderer: Renderer, output_dir: Path) -> None:
     )
     layout.set_widget(0, devices)
 
-    # Footer: Download, Upload, Total devices
+    # Footer: Download, Upload, Total devices (no units to save space)
     download = EntityWidget(
         WidgetConfig(
             widget_type="entity",
@@ -605,6 +588,7 @@ def generate_network_monitor(renderer: Renderer, output_dir: Path) -> None:
             entity_id="sensor.router_download",
             label="Down",
             color=COLOR_LIME,
+            options={"show_unit": False},
         )
     )
     layout.set_widget(1, download)
@@ -616,6 +600,7 @@ def generate_network_monitor(renderer: Renderer, output_dir: Path) -> None:
             entity_id="sensor.router_upload",
             label="Up",
             color=COLOR_ORANGE,
+            options={"show_unit": False},
         )
     )
     layout.set_widget(2, upload)
@@ -644,6 +629,7 @@ def generate_thermostat(renderer: Renderer, output_dir: Path) -> None:
     img, draw = renderer.create_canvas()
 
     # Hero: Temperature gauge (using arc style for thermostat look)
+    # Read from "temperature" attribute since climate entity state is HVAC mode
     thermostat = GaugeWidget(
         WidgetConfig(
             widget_type="gauge",
@@ -651,7 +637,13 @@ def generate_thermostat(renderer: Renderer, output_dir: Path) -> None:
             entity_id="climate.main",
             label="Target",
             color=COLOR_ORANGE,
-            options={"style": "arc", "min": 15, "max": 30, "unit": "°C"},
+            options={
+                "style": "arc",
+                "min": 15,
+                "max": 30,
+                "unit": "°C",
+                "attribute": "temperature",
+            },
         )
     )
     layout.set_widget(0, thermostat)
