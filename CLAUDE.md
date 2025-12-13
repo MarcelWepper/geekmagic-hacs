@@ -128,10 +128,26 @@ GET  /app.json               # Get device state
 Tests are organized by component:
 - `tests/test_device.py` - HTTP client tests
 - `tests/test_renderer.py` - Pillow rendering tests
+- `tests/test_config_flow.py` - Config flow and options flow tests
+- `tests/test_integration.py` - Integration setup/teardown tests
 - `tests/widgets/test_widgets.py` - Widget tests
 - `tests/layouts/test_layouts.py` - Layout tests
 
 All tests use mocks and don't require a real device or Home Assistant instance.
+
+### Home Assistant Testing Best Practices
+
+Uses `pytest-homeassistant-custom-component` for HA-specific fixtures. See:
+- https://github.com/MatthewFlamm/pytest-homeassistant-custom-component
+- https://developers.home-assistant.io/docs/development_testing/
+
+**Available fixtures**: `hass`, `aioclient_mock`, `MockConfigEntry`, etc.
+
+**Testing principles**:
+- Use core interfaces (`hass.states`, `hass.services`) instead of integration details
+- Mock external dependencies (`aiohttp`, devices)
+- Add regression tests when fixing bugs
+- Run `pytest` and `pre-commit` before commits
 
 ## Adding New Widgets
 
