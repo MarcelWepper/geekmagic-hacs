@@ -266,7 +266,7 @@ THEME_SOFT = Theme(
     bar_background=(45, 45, 60),
 )
 
-# 6. Light - Clean light theme
+# 6. Light - Clean light theme with white backgrounds
 THEME_LIGHT = Theme(
     name="light",
     primary=(0, 122, 204),
@@ -275,10 +275,10 @@ THEME_LIGHT = Theme(
     warning=(255, 193, 7),
     error=(220, 53, 69),
     muted=(180, 180, 180),
-    background=(245, 245, 250),
+    background=(255, 255, 255),
     surface=(255, 255, 255),
-    surface_variant=(240, 240, 245),
-    border=(220, 220, 225),
+    surface_variant=(250, 250, 252),
+    border=(230, 230, 235),
     text_primary=(30, 30, 35),
     text_secondary=(100, 100, 110),
     text_on_primary=(255, 255, 255),
@@ -291,12 +291,12 @@ THEME_LIGHT = Theme(
         (23, 162, 184),  # Teal
     ),
     corner_radius=12,
-    border_width=1,
-    border_style="solid",
+    border_width=0,  # No borders - clean look
+    border_style="none",
     layout_padding=8,
     widget_padding=6,
     gap=6,
-    bar_background=(225, 225, 230),
+    bar_background=(235, 235, 240),
 )
 
 # 7. Ocean - Deep blue nautical theme

@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from ..const import (
     COLOR_CYAN,
     COLOR_GRAY,
-    COLOR_PANEL,
     COLOR_WHITE,
     PLACEHOLDER_NAME,
     PLACEHOLDER_VALUE,
@@ -104,8 +103,8 @@ class EntityWidget(Widget):
                 label_color=COLOR_GRAY,
             )
 
-        # Wrap in panel if enabled
+        # Wrap in panel if enabled (uses theme.surface color)
         if self.show_panel:
-            return Panel(child=content, color=COLOR_PANEL)
+            return Panel(child=content)
 
         return content

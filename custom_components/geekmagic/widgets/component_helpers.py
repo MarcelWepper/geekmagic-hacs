@@ -10,7 +10,7 @@ Example:
 
 from __future__ import annotations
 
-from ..const import COLOR_DARK_GRAY, COLOR_GRAY, COLOR_WHITE
+from ..const import COLOR_GRAY, COLOR_WHITE
 from .components import (
     Adaptive,
     Arc,
@@ -35,7 +35,7 @@ def BarGauge(
     label: str,
     color: Color,
     icon: str | None = None,
-    background: Color = COLOR_DARK_GRAY,
+    background: Color | None = None,  # None = use theme.bar_background
     padding: int = 8,
 ) -> Component:
     """Bar gauge with header row (icon/label/value) and progress bar below.
@@ -82,7 +82,7 @@ def RingGauge(
     value: str,
     label: str,
     color: Color,
-    background: Color = COLOR_DARK_GRAY,
+    background: Color | None = None,  # None = use theme.bar_background
 ) -> Component:
     """Ring gauge with centered value and label overlay.
 
@@ -117,7 +117,7 @@ def ArcGauge(
     value: str,
     label: str,
     color: Color,
-    background: Color = COLOR_DARK_GRAY,
+    background: Color | None = None,  # None = use theme.bar_background
 ) -> Component:
     """Arc gauge (270 degrees) with centered value and label at top.
 

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from PIL import Image
 from PIL import ImageDraw as PILImageDraw
 
-from ..const import COLOR_BLACK, DISPLAY_HEIGHT, DISPLAY_WIDTH
+from ..const import DISPLAY_HEIGHT, DISPLAY_WIDTH
 from ..render_context import RenderContext
 from ..widgets.components import Component
 from ..widgets.theme import DEFAULT_THEME, Theme
@@ -150,8 +150,8 @@ class Layout(ABC):
             slot_width = (x2 - x1) * scale
             slot_height = (y2 - y1) * scale
 
-            # Create temporary image for this widget
-            temp_img = Image.new("RGB", (slot_width, slot_height), COLOR_BLACK)
+            # Create temporary image for this widget using theme's surface color
+            temp_img = Image.new("RGB", (slot_width, slot_height), self.theme.surface)
             temp_draw = PILImageDraw.Draw(temp_img)
 
             # Create render context with local coordinates (0, 0 to width, height)

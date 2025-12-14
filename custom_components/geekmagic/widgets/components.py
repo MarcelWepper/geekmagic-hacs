@@ -28,7 +28,7 @@ from stretchable.style import (
     JustifyContent,
 )
 
-from ..const import COLOR_DARK_GRAY, COLOR_WHITE
+from ..const import COLOR_WHITE
 
 if TYPE_CHECKING:
     from ..render_context import RenderContext
@@ -184,8 +184,8 @@ class Bar(Component):
         return (max_width, h)
 
     def render(self, ctx: RenderContext, x: int, y: int, width: int, height: int) -> None:
-        # Use theme-aware background if not specified
-        bg = self.background if self.background is not None else COLOR_DARK_GRAY
+        # Use theme bar_background if not specified
+        bg = self.background if self.background is not None else ctx.theme.bar_background
         ctx.draw_bar((x, y, x + width, y + height), self.percent, self.color, bg)
 
 
@@ -195,7 +195,7 @@ class Ring(Component):
 
     percent: float
     color: Color = (0, 255, 255)
-    background: Color = COLOR_DARK_GRAY
+    background: Color | None = None  # None = use theme.bar_background
     thickness: int | None = None  # None = auto-calculate
 
     def measure(self, ctx: RenderContext, max_width: int, max_height: int) -> tuple[int, int]:
@@ -207,12 +207,13 @@ class Ring(Component):
         radius = size // 2
         center = (x + width // 2, y + height // 2)
         thickness = self.thickness or max(4, radius // 5)
+        bg = self.background if self.background is not None else ctx.theme.bar_background
         ctx.draw_ring_gauge(
             center,
             radius - thickness,
             self.percent,
             self.color,
-            self.background,
+            bg,
             thickness,
         )
 
@@ -223,7 +224,7 @@ class Arc(Component):
 
     percent: float
     color: Color = (0, 255, 255)
-    background: Color = COLOR_DARK_GRAY
+    background: Color | None = None  # None = use theme.bar_background
     width: int = 8
 
     def measure(self, ctx: RenderContext, max_width: int, max_height: int) -> tuple[int, int]:
@@ -234,11 +235,12 @@ class Arc(Component):
         size = min(width, height)
         cx, cy = x + width // 2, y + height // 2
         half = size // 2
+        bg = self.background if self.background is not None else ctx.theme.bar_background
         ctx.draw_arc(
             (cx - half, cy - half, cx + half, cy + half),
             self.percent,
             self.color,
-            self.background,
+            bg,
             self.width,
         )
 
