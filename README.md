@@ -179,6 +179,8 @@ Tested with:
 
 Should work with any GeekMagic device that supports the `/doUpload` HTTP API.
 
+**Important:** This integration works with the **stock firmware** that ships with GeekMagic devices. No custom firmware or flashing required - just connect your device to your network and add the integration.
+
 ## Development
 
 ```bash
