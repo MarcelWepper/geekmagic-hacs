@@ -92,51 +92,55 @@ def create_mock_hass() -> MockHass:
 
 
 def generate_grid_2x2(renderer: Renderer, output_dir: Path) -> None:
-    """Generate Grid 2x2 layout sample."""
+    """Generate Grid 2x2 layout sample - Home Overview."""
     hass = create_mock_hass()
+    # Add more states for this sample
+    hass.states.set(
+        "climate.living_room",
+        "heat",
+        {"temperature": 22, "current_temperature": 21, "friendly_name": "Living Room"},
+    )
+    hass.states.set("light.living_room", "on", {"brightness": 200, "friendly_name": "Lights"})
+
     layout = Grid2x2(padding=8, gap=8)
     img, draw = renderer.create_canvas()
 
-    # 4 gauge widgets
+    # Mixed widgets: Clock, Temperature, Weather, Lights
     widgets = [
-        GaugeWidget(
+        ClockWidget(
             WidgetConfig(
-                widget_type="gauge",
+                widget_type="clock",
                 slot=0,
-                entity_id="sensor.cpu",
-                label="CPU",
-                color=COLOR_TEAL,
-                options={"style": "ring"},
+                color=COLOR_WHITE,
+                options={"show_date": True},
             )
         ),
         GaugeWidget(
             WidgetConfig(
                 widget_type="gauge",
                 slot=1,
-                entity_id="sensor.memory",
-                label="Memory",
-                color=COLOR_PURPLE,
-                options={"style": "ring"},
-            )
-        ),
-        GaugeWidget(
-            WidgetConfig(
-                widget_type="gauge",
-                slot=2,
-                entity_id="sensor.disk",
-                label="Disk",
+                entity_id="sensor.temp",
+                label="Inside",
                 color=COLOR_ORANGE,
-                options={"style": "ring"},
+                options={"style": "arc", "min": 15, "max": 30},
             )
         ),
-        GaugeWidget(
+        WeatherWidget(
             WidgetConfig(
-                widget_type="gauge",
+                widget_type="weather",
+                slot=2,
+                entity_id="weather.home",
+                options={"show_forecast": False},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
                 slot=3,
-                entity_id="sensor.battery",
-                label="Battery",
-                color=COLOR_LIME,
-                options={"style": "ring"},
+                entity_id="light.living_room",
+                label="Lights",
+                color=COLOR_GOLD,
+                options={"icon": "lightbulb", "show_panel": True},
             )
         ),
     ]
@@ -148,64 +152,180 @@ def generate_grid_2x2(renderer: Renderer, output_dir: Path) -> None:
 
 
 def generate_grid_2x3(renderer: Renderer, output_dir: Path) -> None:
-    """Generate Grid 2x3 layout sample."""
+    """Generate Grid 2x3 layout sample - Smart Home Dashboard."""
     hass = create_mock_hass()
+    # Add smart home entities
+    hass.states.set("light.bedroom", "off", {"friendly_name": "Bedroom"})
+    hass.states.set("light.kitchen", "on", {"brightness": 255, "friendly_name": "Kitchen"})
+    hass.states.set("lock.front_door", "locked", {"friendly_name": "Front Door"})
+    hass.states.set(
+        "binary_sensor.motion", "off", {"friendly_name": "Motion", "device_class": "motion"}
+    )
+
     layout = Grid2x3(padding=8, gap=8)
     img, draw = renderer.create_canvas()
 
-    # 6 entity widgets
-    configs = [
-        ("sensor.temp", "Temp", COLOR_ORANGE),
-        ("sensor.humidity", "Humidity", COLOR_CYAN),
-        ("sensor.cpu", "CPU", COLOR_TEAL),
-        ("sensor.memory", "Memory", COLOR_PURPLE),
-        ("sensor.power", "Power", COLOR_GOLD),
-        ("sensor.solar", "Solar", COLOR_LIME),
-    ]
-    for i, (entity_id, label, color) in enumerate(configs):
-        widget = EntityWidget(
+    # Smart home mix: Lights, Climate, Security
+    widgets = [
+        EntityWidget(
             WidgetConfig(
                 widget_type="entity",
-                slot=i,
-                entity_id=entity_id,
-                label=label,
-                color=color,
-                options={"show_panel": True},
+                slot=0,
+                entity_id="light.kitchen",
+                label="Kitchen",
+                color=COLOR_GOLD,
+                options={"icon": "lightbulb", "show_panel": True},
             )
-        )
-        layout.set_widget(i, widget)
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=1,
+                entity_id="light.bedroom",
+                label="Bedroom",
+                color=COLOR_PURPLE,
+                options={"icon": "lightbulb-outline", "show_panel": True},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=2,
+                entity_id="sensor.temp",
+                label="Temp",
+                color=COLOR_ORANGE,
+                options={"icon": "thermometer", "show_panel": True},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=3,
+                entity_id="sensor.humidity",
+                label="Humidity",
+                color=COLOR_CYAN,
+                options={"icon": "water-percent", "show_panel": True},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=4,
+                entity_id="lock.front_door",
+                label="Door",
+                color=COLOR_LIME,
+                options={"icon": "lock", "show_panel": True},
+            )
+        ),
+        StatusWidget(
+            WidgetConfig(
+                widget_type="status",
+                slot=5,
+                entity_id="binary_sensor.motion",
+                label="Motion",
+                options={"icon": "motion-sensor"},
+            )
+        ),
+    ]
+    for i, w in enumerate(widgets):
+        layout.set_widget(i, w)
 
     layout.render(renderer, draw, hass)  # type: ignore[arg-type]
     save_layout(renderer, img, "grid_2x3", output_dir)
 
 
 def generate_grid_3x2(renderer: Renderer, output_dir: Path) -> None:
-    """Generate Grid 3x2 layout sample (3 rows, 2 columns)."""
+    """Generate Grid 3x2 layout sample - Energy Monitor."""
     hass = create_mock_hass()
+    # Add energy entities
+    hass.states.set(
+        "sensor.grid_import",
+        "1.2",
+        {"unit_of_measurement": "kW", "friendly_name": "Grid Import"},
+    )
+    hass.states.set(
+        "sensor.grid_export",
+        "0.5",
+        {"unit_of_measurement": "kW", "friendly_name": "Grid Export"},
+    )
+    hass.states.set(
+        "sensor.home_battery",
+        "75",
+        {"unit_of_measurement": "%", "friendly_name": "Home Battery"},
+    )
+
     layout = Grid3x2(padding=8, gap=8)
     img, draw = renderer.create_canvas()
 
-    # 6 widgets in 3x2 layout
-    configs = [
-        ("sensor.cpu", "CPU", COLOR_TEAL, "ring"),
-        ("sensor.memory", "Memory", COLOR_PURPLE, "ring"),
-        ("sensor.disk", "Disk", COLOR_ORANGE, "ring"),
-        ("sensor.battery", "Battery", COLOR_LIME, "ring"),
-        ("sensor.power", "Power", COLOR_GOLD, "bar"),
-        ("sensor.solar", "Solar", COLOR_CYAN, "bar"),
-    ]
-    for i, (entity_id, label, color, style) in enumerate(configs):
-        widget = GaugeWidget(
+    # Energy monitoring: Solar, Battery, Grid, Power usage
+    widgets = [
+        GaugeWidget(
             WidgetConfig(
                 widget_type="gauge",
-                slot=i,
-                entity_id=entity_id,
-                label=label,
-                color=color,
-                options={"style": style},
+                slot=0,
+                entity_id="sensor.solar",
+                label="Solar",
+                color=COLOR_GOLD,
+                options={"style": "arc", "icon": "solar-power", "max": 5},
             )
+        ),
+        GaugeWidget(
+            WidgetConfig(
+                widget_type="gauge",
+                slot=1,
+                entity_id="sensor.home_battery",
+                label="Battery",
+                color=COLOR_LIME,
+                options={"style": "ring", "icon": "battery-high"},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=2,
+                entity_id="sensor.power",
+                label="Using",
+                color=COLOR_ORANGE,
+                options={"icon": "flash", "show_panel": True},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=3,
+                entity_id="sensor.grid_import",
+                label="Import",
+                color=COLOR_RED,
+                options={"icon": "transmission-tower-import", "show_panel": True},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=4,
+                entity_id="sensor.grid_export",
+                label="Export",
+                color=COLOR_TEAL,
+                options={"icon": "transmission-tower-export", "show_panel": True},
+            )
+        ),
+    ]
+    # Add chart for slot 5
+    chart = ChartWidget(
+        WidgetConfig(
+            widget_type="chart",
+            slot=5,
+            entity_id="sensor.power",
+            label="History",
+            color=COLOR_CYAN,
         )
-        layout.set_widget(i, widget)
+    )
+    rng = random.Random(100)  # noqa: S311
+    chart.set_history([1.5 + rng.uniform(-0.5, 1.5) for _ in range(24)])
+    widgets.append(chart)
+
+    for i, w in enumerate(widgets):
+        layout.set_widget(i, w)
 
     layout.render(renderer, draw, hass)  # type: ignore[arg-type]
     save_layout(renderer, img, "grid_3x2", output_dir)
@@ -361,29 +481,57 @@ def generate_split_horizontal(renderer: Renderer, output_dir: Path) -> None:
 
 
 def generate_three_column(renderer: Renderer, output_dir: Path) -> None:
-    """Generate Three Column layout sample."""
+    """Generate Three Column layout sample - Fitness Tracker."""
     hass = create_mock_hass()
+    # Add fitness entities
+    hass.states.set(
+        "sensor.steps", "8542", {"unit_of_measurement": "steps", "friendly_name": "Steps"}
+    )
+    hass.states.set(
+        "sensor.calories", "420", {"unit_of_measurement": "kcal", "friendly_name": "Calories"}
+    )
+    hass.states.set(
+        "sensor.heart_rate", "72", {"unit_of_measurement": "bpm", "friendly_name": "Heart Rate"}
+    )
+
     layout = ThreeColumnLayout(ratios=(0.33, 0.34, 0.33), padding=8, gap=8)
     img, draw = renderer.create_canvas()
 
-    # 3 gauge widgets
-    configs = [
-        ("sensor.cpu", "CPU", COLOR_TEAL),
-        ("sensor.memory", "MEM", COLOR_PURPLE),
-        ("sensor.disk", "DISK", COLOR_ORANGE),
-    ]
-    for i, (entity_id, label, color) in enumerate(configs):
-        widget = GaugeWidget(
+    # Fitness: Steps, Calories, Heart Rate
+    widgets = [
+        ProgressWidget(
             WidgetConfig(
-                widget_type="gauge",
-                slot=i,
-                entity_id=entity_id,
-                label=label,
-                color=color,
-                options={"style": "bar"},
+                widget_type="progress",
+                slot=0,
+                entity_id="sensor.steps",
+                label="Steps",
+                color=COLOR_LIME,
+                options={"target": 10000, "icon": "walk"},
             )
-        )
-        layout.set_widget(i, widget)
+        ),
+        ProgressWidget(
+            WidgetConfig(
+                widget_type="progress",
+                slot=1,
+                entity_id="sensor.calories",
+                label="Cals",
+                color=COLOR_ORANGE,
+                options={"target": 600, "icon": "fire"},
+            )
+        ),
+        EntityWidget(
+            WidgetConfig(
+                widget_type="entity",
+                slot=2,
+                entity_id="sensor.heart_rate",
+                label="BPM",
+                color=COLOR_RED,
+                options={"icon": "heart-pulse", "show_panel": True},
+            )
+        ),
+    ]
+    for i, w in enumerate(widgets):
+        layout.set_widget(i, w)
 
     layout.render(renderer, draw, hass)  # type: ignore[arg-type]
     save_layout(renderer, img, "three_column", output_dir)
