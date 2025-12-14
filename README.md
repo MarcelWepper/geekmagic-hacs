@@ -134,8 +134,6 @@ Choose from **10 built-in themes** that go beyond just colors - affecting typogr
 
 After installation, a **GeekMagic** item appears in your sidebar.
 
-<!-- TODO: Add screenshot of panel here -->
-
 #### Views Tab
 
 Create and manage display views:
@@ -148,7 +146,9 @@ Create and manage display views:
 
 The editor provides a live preview and widget configuration:
 
-<!-- TODO: Add screenshot of editor here -->
+<p align="center">
+  <img src="docs/panel-editor.png" alt="GeekMagic Panel Editor" width="800">
+</p>
 
 - **Preview**: See real-time rendering as you configure
 - **Layout**: Choose grid size (2x2, 2x3, 3x2, hero, split, etc.)
@@ -163,6 +163,37 @@ Assign views to your GeekMagic devices:
 - Check which views each device should display
 - Devices automatically cycle through assigned views
 - Drag to reorder the rotation sequence
+
+---
+
+## Entities
+
+Each GeekMagic device creates the following entities for control and monitoring:
+
+### Controls
+
+| Entity | Type | Description |
+|--------|------|-------------|
+| `number.geekmagic_brightness` | Number | Display brightness (0-100%) |
+| `number.geekmagic_refresh_interval` | Number | Update interval (5-300 seconds) |
+| `select.geekmagic_mode` | Select | Device mode (Custom Views, Clock, Weather, System Info) |
+| `select.geekmagic_current_view` | Select | Currently displayed view (when in Custom mode) |
+
+### Sensors
+
+| Entity | Type | Description |
+|--------|------|-------------|
+| `sensor.geekmagic_status` | Sensor | Connection status with device attributes |
+| `sensor.geekmagic_storage_used` | Sensor | Device storage usage percentage |
+| `sensor.geekmagic_storage_free` | Sensor | Free storage in KB |
+
+### Buttons
+
+| Entity | Type | Description |
+|--------|------|-------------|
+| `button.geekmagic_refresh` | Button | Force immediate display refresh |
+| `button.geekmagic_next_screen` | Button | Switch to next view in rotation |
+| `button.geekmagic_previous_screen` | Button | Switch to previous view in rotation |
 
 ---
 
