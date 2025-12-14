@@ -47,6 +47,7 @@ export class GeekMagicPanel extends LitElement {
   @state() private _previewLoading = false;
   @state() private _loading = true;
   @state() private _saving = false;
+  @state() private _draggingSlot: number | null = null;
 
   static styles = css`
     :host {
@@ -264,6 +265,22 @@ export class GeekMagicPanel extends LitElement {
 
     .slot-card {
       --ha-card-border-radius: 8px;
+      cursor: grab;
+      transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+    }
+
+    .slot-card:active {
+      cursor: grabbing;
+    }
+
+    .slot-card.dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+    }
+
+    .slot-card.drag-over {
+      box-shadow: 0 0 0 2px var(--primary-color);
+      transform: scale(1.02);
     }
 
     .slot-card .card-content {
@@ -271,6 +288,8 @@ export class GeekMagicPanel extends LitElement {
     }
 
     .slot-header {
+      display: flex;
+      align-items: center;
       font-weight: 500;
       margin-bottom: 16px;
       color: var(--primary-text-color);
@@ -524,6 +543,64 @@ export class GeekMagicPanel extends LitElement {
     }
   }
 
+  // Drag and drop handlers for reordering slots
+  private _onDragStart(e: DragEvent, slot: number): void {
+    this._draggingSlot = slot;
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", slot.toString());
+    }
+  }
+
+  private _onDragEnd(): void {
+    this._draggingSlot = null;
+    // Remove drag-over class from all cards
+    this.shadowRoot?.querySelectorAll(".drag-over").forEach((el) => {
+      el.classList.remove("drag-over");
+    });
+  }
+
+  private _onDragOver(e: DragEvent, slot: number): void {
+    e.preventDefault();
+    if (this._draggingSlot === null || this._draggingSlot === slot) return;
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = "move";
+    }
+    (e.currentTarget as HTMLElement).classList.add("drag-over");
+  }
+
+  private _onDragLeave(e: DragEvent): void {
+    (e.currentTarget as HTMLElement).classList.remove("drag-over");
+  }
+
+  private _onDrop(e: DragEvent, targetSlot: number): void {
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).classList.remove("drag-over");
+
+    if (this._draggingSlot === null || this._draggingSlot === targetSlot) return;
+    if (!this._editingView) return;
+
+    const sourceSlot = this._draggingSlot;
+
+    // Swap the widget configurations between slots
+    const widgets = [...this._editingView.widgets];
+    const sourceWidget = widgets.find((w) => w.slot === sourceSlot);
+    const targetWidget = widgets.find((w) => w.slot === targetSlot);
+
+    // Update slot assignments
+    if (sourceWidget) {
+      sourceWidget.slot = targetSlot;
+    }
+    if (targetWidget) {
+      targetWidget.slot = sourceSlot;
+    }
+
+    this._editingView = { ...this._editingView, widgets: [...widgets] };
+    this._draggingSlot = null;
+    this.requestUpdate();
+    this._refreshPreview();
+  }
+
   render() {
     if (this._loading) {
       return html`
@@ -773,9 +850,20 @@ export class GeekMagicPanel extends LitElement {
     const schema = this._config.widget_types[widgetType];
 
     return html`
-      <ha-card class="slot-card">
+      <ha-card
+        class="slot-card ${this._draggingSlot === slot ? "dragging" : ""}"
+        draggable="true"
+        @dragstart=${(e: DragEvent) => this._onDragStart(e, slot)}
+        @dragend=${() => this._onDragEnd()}
+        @dragover=${(e: DragEvent) => this._onDragOver(e, slot)}
+        @dragleave=${(e: DragEvent) => this._onDragLeave(e)}
+        @drop=${(e: DragEvent) => this._onDrop(e, slot)}
+      >
         <div class="card-content">
-          <div class="slot-header">Slot ${slot + 1}</div>
+          <div class="slot-header">
+            <ha-icon icon="mdi:drag" style="opacity: 0.5; margin-right: 8px;"></ha-icon>
+            Slot ${slot + 1}
+          </div>
 
           <div class="slot-field">
             <ha-select
