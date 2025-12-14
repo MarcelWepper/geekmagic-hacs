@@ -36,6 +36,34 @@ class GaugeWidget(Widget):
         self.unit = config.options.get("unit", "")
         # Attribute to read value from (e.g., "temperature" for climate entities)
         self.attribute = config.options.get("attribute")
+        # Color thresholds: list of {value, color} sorted by value
+        self.color_thresholds = config.options.get("color_thresholds", [])
+
+    def _get_threshold_color(self, value: float) -> tuple[int, int, int] | None:
+        """Get color based on value and thresholds.
+
+        Thresholds are sorted ascending, color is picked from highest threshold <= value.
+
+        Args:
+            value: Current value to check
+
+        Returns:
+            RGB color tuple if threshold matches, None otherwise
+        """
+        if not self.color_thresholds:
+            return None
+
+        # Sort thresholds by value ascending
+        sorted_thresholds = sorted(self.color_thresholds, key=lambda t: t.get("value", 0))
+
+        matching_color = None
+        for threshold in sorted_thresholds:
+            threshold_value = threshold.get("value", 0)
+            threshold_color = threshold.get("color")
+            if value >= threshold_value and threshold_color:
+                matching_color = tuple(threshold_color)
+
+        return matching_color  # type: ignore[return-value]
 
     def render(
         self,
@@ -68,7 +96,9 @@ class GaugeWidget(Widget):
         # Get label using helper
         name = resolve_label(self.config, state)
 
-        color = self.config.color or COLOR_CYAN
+        # Determine color: threshold color > config color > default
+        threshold_color = self._get_threshold_color(value)
+        color = threshold_color or self.config.color or COLOR_CYAN
 
         # Format value with unit
         value_text = format_value_with_unit(display_value, self.unit) if self.show_value else ""

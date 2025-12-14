@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
+from zoneinfo import ZoneInfo
 
 from ..const import COLOR_GRAY, COLOR_WHITE
 from .base import Widget, WidgetConfig
@@ -12,6 +14,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
     from ..render_context import RenderContext
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ClockWidget(Widget):
@@ -23,6 +27,7 @@ class ClockWidget(Widget):
         self.show_date = config.options.get("show_date", True)
         self.show_seconds = config.options.get("show_seconds", False)
         self.time_format = config.options.get("time_format", "24h")
+        self.timezone = config.options.get("timezone")
 
     def get_entities(self) -> list[str]:
         """Clock widget doesn't depend on entities."""
@@ -47,10 +52,18 @@ class ClockWidget(Widget):
         font_date = ctx.get_font("regular")
         font_small = ctx.get_font("small")
 
-        # Get timezone from Home Assistant if available, otherwise use UTC
+        # Get timezone: custom timezone option > HA config > UTC
         tz = None
-        if hass is not None:
+        if self.timezone:
+            try:
+                tz = ZoneInfo(self.timezone)
+            except Exception:
+                _LOGGER.warning("Invalid timezone: %s, using HA timezone", self.timezone)
+                tz = None
+
+        if tz is None and hass is not None:
             tz = getattr(hass.config, "time_zone_obj", None) or UTC
+
         now = datetime.now(tz=tz or UTC)
 
         # Format time

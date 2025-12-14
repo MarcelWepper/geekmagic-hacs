@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from ..const import COLOR_CYAN, COLOR_DARK_GRAY, COLOR_GRAY, COLOR_WHITE
 from .base import Widget, WidgetConfig
@@ -17,6 +17,13 @@ if TYPE_CHECKING:
 class ProgressWidget(Widget):
     """Widget that displays progress with label (like fitness tracking)."""
 
+    # Bar height multipliers for different styles
+    BAR_HEIGHT_MULTIPLIERS: ClassVar[dict[str, float]] = {
+        "thin": 0.10,
+        "normal": 0.17,
+        "thick": 0.25,
+    }
+
     def __init__(self, config: WidgetConfig) -> None:
         """Initialize the progress widget."""
         super().__init__(config)
@@ -24,6 +31,7 @@ class ProgressWidget(Widget):
         self.unit = config.options.get("unit", "")
         self.show_target = config.options.get("show_target", True)
         self.icon = config.options.get("icon")
+        self.bar_height_style = config.options.get("bar_height", "normal")  # thin, normal, thick
 
     def render(
         self,
@@ -44,7 +52,8 @@ class ProgressWidget(Widget):
         # Calculate relative padding and sizes
         padding = int(ctx.width * 0.05)
         icon_size = max(10, int(ctx.height * 0.23))
-        bar_height = max(6, int(ctx.height * 0.17))
+        bar_height_mult = self.BAR_HEIGHT_MULTIPLIERS.get(self.bar_height_style, 0.17)
+        bar_height = max(4, int(ctx.height * bar_height_mult))
 
         # Get entity state and extract value using helper
         state = self.get_entity_state(hass)

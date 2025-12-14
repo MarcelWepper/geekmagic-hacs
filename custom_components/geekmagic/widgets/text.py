@@ -31,6 +31,8 @@ class TextWidget(Widget):
         self.text = config.options.get("text", "")
         self.size = config.options.get("size", "regular")  # small, regular, large, xlarge
         self.align = config.options.get("align", "center")  # left, center, right
+        # Entity ID for dynamic text (from options, takes precedence over widget entity_id)
+        self.dynamic_entity_id = config.options.get("entity_id")
 
     def render(
         self,
@@ -69,11 +71,13 @@ class TextWidget(Widget):
     def _get_text(self, hass: HomeAssistant | None) -> str:
         """Get the text to display.
 
-        If entity_id is set, returns the entity state.
+        If entity_id is set (from options or widget config), returns the entity state.
         Otherwise returns the configured text.
         """
-        if self.config.entity_id and hass:
-            state = self.get_entity_state(hass)
+        # Check dynamic entity_id from options first, then widget config entity_id
+        entity_id = self.dynamic_entity_id or self.config.entity_id
+        if entity_id and hass:
+            state = hass.states.get(entity_id)
             if state:
                 return state.state
 

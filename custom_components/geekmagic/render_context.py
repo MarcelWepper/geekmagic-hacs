@@ -345,6 +345,7 @@ class RenderContext:
         color: tuple[int, int, int],
         fill: bool = True,
         smooth: bool = True,
+        gradient: bool = False,
     ) -> None:
         """Draw a sparkline chart in local coordinates.
 
@@ -354,10 +355,11 @@ class RenderContext:
             color: Line color
             fill: Whether to fill area under the line
             smooth: Whether to use spline interpolation
+            gradient: Whether to use gradient fill (cool colors for low, warm for high)
         """
         abs_rect = self._abs_rect(rect)
         self._renderer.draw_sparkline(
-            self._draw, abs_rect, data, color=color, fill=fill, smooth=smooth
+            self._draw, abs_rect, data, color=color, fill=fill, smooth=smooth, gradient=gradient
         )
 
     def draw_timeline_bar(

@@ -27,6 +27,8 @@ class ChartWidget(Widget):
         self.hours = config.options.get("hours", 24)
         self.show_value = config.options.get("show_value", True)
         self.show_range = config.options.get("show_range", True)
+        self.fill = config.options.get("fill", False)
+        self.color_gradient = config.options.get("color_gradient", False)
 
         # History data cache (populated externally)
         self._history_data: list[float] = []
@@ -127,7 +129,13 @@ class ChartWidget(Widget):
                 # No range footer for binary (would just be 0/1)
             else:
                 # Numeric data: use sparkline chart
-                ctx.draw_sparkline(chart_rect, self._history_data, color=color, fill=True)
+                ctx.draw_sparkline(
+                    chart_rect,
+                    self._history_data,
+                    color=color,
+                    fill=self.fill,
+                    gradient=self.color_gradient,
+                )
 
                 # Draw min/max range for numeric data
                 if self.show_range:

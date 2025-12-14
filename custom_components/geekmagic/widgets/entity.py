@@ -40,6 +40,7 @@ class EntityWidget(Widget):
         self.show_icon = config.options.get("show_icon", True)
         self.icon = config.options.get("icon")  # Explicit icon override
         self.show_panel = config.options.get("show_panel", False)
+        self.precision = config.options.get("precision")  # Decimal places for numeric values
 
     def render(
         self,
@@ -64,6 +65,13 @@ class EntityWidget(Widget):
             name = self.config.label or self.config.entity_id or PLACEHOLDER_NAME
         else:
             value = state.state
+            # Apply precision formatting if specified and value is numeric
+            if self.precision is not None:
+                try:
+                    numeric_value = float(value)
+                    value = f"{numeric_value:.{self.precision}f}"
+                except (ValueError, TypeError):
+                    pass  # Keep original value if not numeric
             unit = get_unit(state) if self.show_unit else ""
             name = resolve_label(self.config, state, state.entity_id)
 

@@ -48,6 +48,7 @@ class WeatherWidget(Widget):
         self.forecast_days = config.options.get("forecast_days", 3)
         self.show_humidity = config.options.get("show_humidity", True)
         self.show_wind = config.options.get("show_wind", False)
+        self.show_high_low = config.options.get("show_high_low", True)
 
     def render(
         self,
@@ -176,6 +177,7 @@ class WeatherWidget(Widget):
                     fx = padding + i * item_width + item_width // 2
                     day_condition = day.get("condition", "sunny")
                     day_temp = day.get("temperature", "--")
+                    day_temp_low = day.get("templow", None)
                     day_name = day.get("datetime", "")[:3] if day.get("datetime") else f"D{i + 1}"
 
                     # Day name
@@ -196,9 +198,13 @@ class WeatherWidget(Widget):
                         color=COLOR_GRAY,
                     )
 
-                    # Temperature
+                    # Temperature (high/low or just temp)
+                    if self.show_high_low and day_temp_low is not None:
+                        temp_str = f"{day_temp}°/{day_temp_low}°"
+                    else:
+                        temp_str = f"{day_temp}°"
                     ctx.draw_text(
-                        f"{day_temp}°",
+                        temp_str,
                         (fx, forecast_y + int(ctx.height * 0.20)),
                         font=font_tiny,
                         color=COLOR_WHITE,

@@ -15,6 +15,10 @@ import type {
   ViewConfig,
   DeviceConfig,
   WidgetConfig,
+  WidgetOption,
+  ProgressItem,
+  StatusEntity,
+  ColorThreshold,
 } from "./types";
 
 // Debounce helper
@@ -47,6 +51,7 @@ export class GeekMagicPanel extends LitElement {
   @state() private _previewLoading = false;
   @state() private _loading = true;
   @state() private _saving = false;
+  @state() private _expandedItems: Set<string> = new Set();
 
   static styles = css`
     :host {
@@ -341,6 +346,139 @@ export class GeekMagicPanel extends LitElement {
     ha-entity-picker {
       display: block;
       width: 100%;
+    }
+
+    /* Widget options */
+    .widget-options {
+      border-top: 1px solid var(--divider-color);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .option-field {
+      margin-bottom: 12px;
+    }
+
+    .option-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .option-row label {
+      font-size: 14px;
+      color: var(--primary-text-color);
+    }
+
+    /* Array editors */
+    .array-editor {
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+
+    .array-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .array-editor-header span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .array-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .array-item {
+      border: 1px solid var(--divider-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .array-item-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--secondary-background-color);
+      cursor: pointer;
+    }
+
+    .array-item-header:hover {
+      background: var(--divider-color);
+    }
+
+    .array-item-title {
+      flex: 1;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .array-item-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .array-item-content {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .array-item-content.collapsed {
+      display: none;
+    }
+
+    .add-item-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px;
+      border: 1px dashed var(--divider-color);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--secondary-text-color);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .add-item-button:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    /* Color thresholds editor */
+    .threshold-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .threshold-value {
+      width: 80px;
+    }
+
+    .threshold-color {
+      width: 60px;
+      height: 32px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
     /* Devices */
@@ -878,9 +1016,522 @@ export class GeekMagicPanel extends LitElement {
                 })}
             ></ha-textfield>
           </div>
+
+          ${schema?.options?.length
+            ? html`
+                <div class="widget-options">
+                  ${schema.options.map((opt) =>
+                    this._renderOptionField(slot, widget, opt)
+                  )}
+                </div>
+              `
+            : nothing}
         </div>
       </ha-card>
     `;
+  }
+
+  private _renderOptionField(
+    slot: number,
+    widget: WidgetConfig | undefined,
+    opt: WidgetOption
+  ) {
+    const value = widget?.options?.[opt.key] ?? opt.default;
+
+    switch (opt.type) {
+      case "boolean":
+        return html`
+          <div class="option-row">
+            <label>${opt.label}</label>
+            <ha-switch
+              .checked=${!!value}
+              @change=${(e: Event) =>
+                this._updateWidgetOption(
+                  slot,
+                  opt.key,
+                  (e.target as HTMLInputElement).checked
+                )}
+            ></ha-switch>
+          </div>
+        `;
+
+      case "select":
+        return html`
+          <div class="option-field">
+            <ha-select
+              .label=${opt.label}
+              .value=${value || opt.default || ""}
+              @selected=${(e: CustomEvent) => {
+                const index = e.detail.index as number;
+                const selected = opt.options?.[index];
+                if (selected !== undefined) {
+                  this._updateWidgetOption(slot, opt.key, selected);
+                }
+              }}
+              @closed=${(e: Event) => e.stopPropagation()}
+            >
+              ${opt.options?.map(
+                (o) => html`<mwc-list-item value=${o}>${o}</mwc-list-item>`
+              )}
+            </ha-select>
+          </div>
+        `;
+
+      case "number":
+        return html`
+          <div class="option-field">
+            <ha-textfield
+              type="number"
+              .label=${opt.label}
+              .value=${value !== undefined ? String(value) : ""}
+              .min=${opt.min !== undefined ? String(opt.min) : ""}
+              .max=${opt.max !== undefined ? String(opt.max) : ""}
+              @input=${(e: Event) => {
+                const val = (e.target as HTMLInputElement).value;
+                this._updateWidgetOption(
+                  slot,
+                  opt.key,
+                  val ? parseFloat(val) : undefined
+                );
+              }}
+            ></ha-textfield>
+          </div>
+        `;
+
+      case "text":
+        return html`
+          <div class="option-field">
+            <ha-textfield
+              .label=${opt.label}
+              .value=${value || ""}
+              .placeholder=${opt.placeholder || ""}
+              @input=${(e: Event) =>
+                this._updateWidgetOption(
+                  slot,
+                  opt.key,
+                  (e.target as HTMLInputElement).value
+                )}
+            ></ha-textfield>
+          </div>
+        `;
+
+      case "icon":
+        return html`
+          <div class="option-field">
+            <ha-icon-picker
+              .hass=${this.hass}
+              .label=${opt.label}
+              .value=${value || ""}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateWidgetOption(slot, opt.key, e.detail.value)}
+            ></ha-icon-picker>
+          </div>
+        `;
+
+      case "color":
+        return html`
+          <div class="option-field">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ color_rgb: {} }}
+              .value=${value}
+              .label=${opt.label}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateWidgetOption(slot, opt.key, e.detail.value)}
+            ></ha-selector>
+          </div>
+        `;
+
+      case "entity":
+        return html`
+          <div class="option-field">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ entity: {} }}
+              .value=${value || ""}
+              .label=${opt.label}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateWidgetOption(slot, opt.key, e.detail.value)}
+            ></ha-selector>
+          </div>
+        `;
+
+      case "thresholds":
+        return this._renderThresholdsEditor(slot, opt.key, value as ColorThreshold[] | undefined);
+
+      case "progress_items":
+        return this._renderProgressItemsEditor(slot, opt.key, value as ProgressItem[] | undefined);
+
+      case "status_entities":
+        return this._renderStatusEntitiesEditor(slot, opt.key, value as StatusEntity[] | undefined);
+
+      default:
+        return nothing;
+    }
+  }
+
+  private _updateWidgetOption(slot: number, key: string, value: unknown): void {
+    if (!this._editingView) return;
+
+    const widgets = [...this._editingView.widgets];
+    const idx = widgets.findIndex((w) => w.slot === slot);
+
+    if (idx >= 0) {
+      const widget = widgets[idx];
+      widgets[idx] = {
+        ...widget,
+        options: { ...(widget.options || {}), [key]: value },
+      };
+    } else {
+      // Create new widget with this option
+      widgets.push({
+        slot,
+        type: "",
+        options: { [key]: value },
+      });
+    }
+
+    this._editingView = { ...this._editingView, widgets: [...widgets] };
+    this.requestUpdate();
+    this._refreshPreview();
+  }
+
+  private _renderThresholdsEditor(
+    slot: number,
+    key: string,
+    thresholds: ColorThreshold[] | undefined
+  ) {
+    const items = thresholds || [];
+
+    return html`
+      <div class="option-field">
+        <div class="array-editor">
+          <div class="array-editor-header">
+            <span>Color Thresholds</span>
+          </div>
+          <div class="array-items">
+            ${items.map(
+              (item, idx) => html`
+                <div class="threshold-item">
+                  <ha-textfield
+                    class="threshold-value"
+                    type="number"
+                    label="Value"
+                    .value=${String(item.value)}
+                    @input=${(e: Event) => {
+                      const newItems = [...items];
+                      newItems[idx] = {
+                        ...item,
+                        value: parseFloat((e.target as HTMLInputElement).value) || 0,
+                      };
+                      this._updateWidgetOption(slot, key, newItems);
+                    }}
+                  ></ha-textfield>
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{ color_rgb: {} }}
+                    .value=${item.color}
+                    @value-changed=${(e: CustomEvent) => {
+                      const newItems = [...items];
+                      newItems[idx] = { ...item, color: e.detail.value };
+                      this._updateWidgetOption(slot, key, newItems);
+                    }}
+                  ></ha-selector>
+                  <ha-icon-button
+                    .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
+                    @click=${() => {
+                      const newItems = items.filter((_, i) => i !== idx);
+                      this._updateWidgetOption(slot, key, newItems);
+                    }}
+                  ></ha-icon-button>
+                </div>
+              `
+            )}
+            <div
+              class="add-item-button"
+              @click=${() => {
+                const newItems = [...items, { value: 0, color: [255, 255, 0] as [number, number, number] }];
+                this._updateWidgetOption(slot, key, newItems);
+              }}
+            >
+              <ha-icon icon="mdi:plus"></ha-icon>
+              Add Threshold
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderProgressItemsEditor(
+    slot: number,
+    key: string,
+    items: ProgressItem[] | undefined
+  ) {
+    const progressItems = items || [];
+
+    return html`
+      <div class="option-field">
+        <div class="array-editor">
+          <div class="array-editor-header">
+            <span>Progress Items (${progressItems.length})</span>
+          </div>
+          <div class="array-items">
+            ${progressItems.map((item, idx) => {
+              const itemKey = `${slot}-progress-${idx}`;
+              const isExpanded = this._expandedItems.has(itemKey);
+
+              return html`
+                <div class="array-item">
+                  <div
+                    class="array-item-header"
+                    @click=${() => this._toggleItemExpanded(itemKey)}
+                  >
+                    <span class="array-item-title">
+                      ${item.label || item.entity_id || `Item ${idx + 1}`}
+                    </span>
+                    <div class="array-item-actions">
+                      <ha-icon-button
+                        .path=${idx > 0
+                          ? "M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z"
+                          : ""}
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          if (idx > 0) this._moveArrayItem(slot, key, progressItems, idx, -1);
+                        }}
+                      ></ha-icon-button>
+                      <ha-icon-button
+                        .path=${idx < progressItems.length - 1
+                          ? "M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                          : ""}
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          if (idx < progressItems.length - 1)
+                            this._moveArrayItem(slot, key, progressItems, idx, 1);
+                        }}
+                      ></ha-icon-button>
+                      <ha-icon-button
+                        .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          const newItems = progressItems.filter((_, i) => i !== idx);
+                          this._updateWidgetOption(slot, key, newItems);
+                        }}
+                      ></ha-icon-button>
+                    </div>
+                  </div>
+                  <div class="array-item-content ${isExpanded ? "" : "collapsed"}">
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ entity: {} }}
+                      .value=${item.entity_id || ""}
+                      .label=${"Entity"}
+                      @value-changed=${(e: CustomEvent) =>
+                        this._updateArrayItem(slot, key, progressItems, idx, {
+                          entity_id: e.detail.value,
+                        })}
+                    ></ha-selector>
+                    <ha-textfield
+                      label="Label"
+                      .value=${item.label || ""}
+                      @input=${(e: Event) =>
+                        this._updateArrayItem(slot, key, progressItems, idx, {
+                          label: (e.target as HTMLInputElement).value,
+                        })}
+                    ></ha-textfield>
+                    <ha-textfield
+                      type="number"
+                      label="Target"
+                      .value=${item.target !== undefined ? String(item.target) : "100"}
+                      @input=${(e: Event) =>
+                        this._updateArrayItem(slot, key, progressItems, idx, {
+                          target: parseFloat((e.target as HTMLInputElement).value) || 100,
+                        })}
+                    ></ha-textfield>
+                    <ha-icon-picker
+                      .hass=${this.hass}
+                      label="Icon"
+                      .value=${item.icon || ""}
+                      @value-changed=${(e: CustomEvent) =>
+                        this._updateArrayItem(slot, key, progressItems, idx, {
+                          icon: e.detail.value,
+                        })}
+                    ></ha-icon-picker>
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ color_rgb: {} }}
+                      .value=${item.color}
+                      .label=${"Color"}
+                      @value-changed=${(e: CustomEvent) =>
+                        this._updateArrayItem(slot, key, progressItems, idx, {
+                          color: e.detail.value,
+                        })}
+                    ></ha-selector>
+                  </div>
+                </div>
+              `;
+            })}
+            <div
+              class="add-item-button"
+              @click=${() => {
+                const newItems = [...progressItems, { entity_id: "", target: 100 }];
+                this._updateWidgetOption(slot, key, newItems);
+                // Auto-expand the new item
+                this._expandedItems.add(`${slot}-progress-${newItems.length - 1}`);
+                this.requestUpdate();
+              }}
+            >
+              <ha-icon icon="mdi:plus"></ha-icon>
+              Add Progress Item
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderStatusEntitiesEditor(
+    slot: number,
+    key: string,
+    items: StatusEntity[] | undefined
+  ) {
+    const statusEntities = items || [];
+
+    return html`
+      <div class="option-field">
+        <div class="array-editor">
+          <div class="array-editor-header">
+            <span>Status Entities (${statusEntities.length})</span>
+          </div>
+          <div class="array-items">
+            ${statusEntities.map((item, idx) => {
+              const itemKey = `${slot}-status-${idx}`;
+              const isExpanded = this._expandedItems.has(itemKey);
+
+              return html`
+                <div class="array-item">
+                  <div
+                    class="array-item-header"
+                    @click=${() => this._toggleItemExpanded(itemKey)}
+                  >
+                    <span class="array-item-title">
+                      ${item.label || item.entity_id || `Entity ${idx + 1}`}
+                    </span>
+                    <div class="array-item-actions">
+                      <ha-icon-button
+                        .path=${idx > 0
+                          ? "M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z"
+                          : ""}
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          if (idx > 0) this._moveArrayItem(slot, key, statusEntities, idx, -1);
+                        }}
+                      ></ha-icon-button>
+                      <ha-icon-button
+                        .path=${idx < statusEntities.length - 1
+                          ? "M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                          : ""}
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          if (idx < statusEntities.length - 1)
+                            this._moveArrayItem(slot, key, statusEntities, idx, 1);
+                        }}
+                      ></ha-icon-button>
+                      <ha-icon-button
+                        .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          const newItems = statusEntities.filter((_, i) => i !== idx);
+                          this._updateWidgetOption(slot, key, newItems);
+                        }}
+                      ></ha-icon-button>
+                    </div>
+                  </div>
+                  <div class="array-item-content ${isExpanded ? "" : "collapsed"}">
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ entity: {} }}
+                      .value=${item.entity_id || ""}
+                      .label=${"Entity"}
+                      @value-changed=${(e: CustomEvent) =>
+                        this._updateArrayItem(slot, key, statusEntities, idx, {
+                          entity_id: e.detail.value,
+                        })}
+                    ></ha-selector>
+                    <ha-textfield
+                      label="Label"
+                      .value=${item.label || ""}
+                      @input=${(e: Event) =>
+                        this._updateArrayItem(slot, key, statusEntities, idx, {
+                          label: (e.target as HTMLInputElement).value,
+                        })}
+                    ></ha-textfield>
+                    <ha-icon-picker
+                      .hass=${this.hass}
+                      label="Icon"
+                      .value=${item.icon || ""}
+                      @value-changed=${(e: CustomEvent) =>
+                        this._updateArrayItem(slot, key, statusEntities, idx, {
+                          icon: e.detail.value,
+                        })}
+                    ></ha-icon-picker>
+                  </div>
+                </div>
+              `;
+            })}
+            <div
+              class="add-item-button"
+              @click=${() => {
+                const newItems = [...statusEntities, { entity_id: "" }];
+                this._updateWidgetOption(slot, key, newItems);
+                // Auto-expand the new item
+                this._expandedItems.add(`${slot}-status-${newItems.length - 1}`);
+                this.requestUpdate();
+              }}
+            >
+              <ha-icon icon="mdi:plus"></ha-icon>
+              Add Status Entity
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _toggleItemExpanded(key: string): void {
+    if (this._expandedItems.has(key)) {
+      this._expandedItems.delete(key);
+    } else {
+      this._expandedItems.add(key);
+    }
+    this._expandedItems = new Set(this._expandedItems);
+  }
+
+  private _updateArrayItem<T extends object>(
+    slot: number,
+    key: string,
+    items: T[],
+    idx: number,
+    updates: Partial<T>
+  ): void {
+    const newItems = [...items];
+    newItems[idx] = { ...newItems[idx], ...updates };
+    this._updateWidgetOption(slot, key, newItems);
+  }
+
+  private _moveArrayItem<T>(
+    slot: number,
+    key: string,
+    items: T[],
+    idx: number,
+    direction: -1 | 1
+  ): void {
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= items.length) return;
+
+    const newItems = [...items];
+    [newItems[idx], newItems[newIdx]] = [newItems[newIdx], newItems[idx]];
+    this._updateWidgetOption(slot, key, newItems);
   }
 
   private _renderPositionGrid(

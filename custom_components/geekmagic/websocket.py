@@ -49,6 +49,12 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
                 "options": ["24h", "12h"],
                 "default": "24h",
             },
+            {
+                "key": "timezone",
+                "type": "text",
+                "label": "Timezone",
+                "placeholder": "e.g., America/New_York",
+            },
         ],
     },
     "entity": {
@@ -59,6 +65,15 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
             {"key": "show_name", "type": "boolean", "label": "Show Name", "default": True},
             {"key": "show_unit", "type": "boolean", "label": "Show Unit", "default": True},
             {"key": "show_icon", "type": "boolean", "label": "Show Icon", "default": True},
+            {"key": "icon", "type": "icon", "label": "Icon Override"},
+            {"key": "show_panel", "type": "boolean", "label": "Panel Background", "default": False},
+            {
+                "key": "precision",
+                "type": "number",
+                "label": "Decimal Places",
+                "min": 0,
+                "max": 5,
+            },
         ],
     },
     "gauge": {
@@ -76,6 +91,10 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
             {"key": "min", "type": "number", "label": "Minimum", "default": 0},
             {"key": "max", "type": "number", "label": "Maximum", "default": 100},
             {"key": "unit", "type": "text", "label": "Unit Override"},
+            {"key": "show_value", "type": "boolean", "label": "Show Value", "default": True},
+            {"key": "icon", "type": "icon", "label": "Icon"},
+            {"key": "attribute", "type": "text", "label": "Entity Attribute"},
+            {"key": "color_thresholds", "type": "thresholds", "label": "Color Thresholds"},
         ],
     },
     "chart": {
@@ -103,6 +122,13 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
                 "label": "Show Min/Max Range",
                 "default": True,
             },
+            {"key": "fill", "type": "boolean", "label": "Fill Area", "default": False},
+            {
+                "key": "color_gradient",
+                "type": "boolean",
+                "label": "Value Gradient",
+                "default": False,
+            },
         ],
     },
     "text": {
@@ -110,11 +136,12 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
         "needs_entity": False,
         "options": [
             {"key": "text", "type": "text", "label": "Text Content"},
+            {"key": "entity_id", "type": "entity", "label": "Entity (dynamic text)"},
             {
                 "key": "size",
                 "type": "select",
                 "label": "Size",
-                "options": ["small", "regular", "large"],
+                "options": ["small", "regular", "large", "xlarge"],
                 "default": "regular",
             },
             {
@@ -131,8 +158,17 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
         "needs_entity": True,
         "entity_domains": None,  # Any entity with numeric state
         "options": [
-            {"key": "goal", "type": "number", "label": "Goal Value"},
+            {"key": "target", "type": "number", "label": "Target Value", "default": 100},
             {"key": "unit", "type": "text", "label": "Unit"},
+            {"key": "show_target", "type": "boolean", "label": "Show Target", "default": True},
+            {"key": "icon", "type": "icon", "label": "Icon"},
+            {
+                "key": "bar_height",
+                "type": "select",
+                "label": "Bar Height",
+                "options": ["thin", "normal", "thick"],
+                "default": "normal",
+            },
         ],
     },
     "weather": {
@@ -150,6 +186,7 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
                 "max": 5,
             },
             {"key": "show_humidity", "type": "boolean", "label": "Show Humidity", "default": True},
+            {"key": "show_high_low", "type": "boolean", "label": "Show High/Low", "default": True},
         ],
     },
     "status": {
@@ -159,6 +196,25 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
         "options": [
             {"key": "on_text", "type": "text", "label": "On Text", "default": "On"},
             {"key": "off_text", "type": "text", "label": "Off Text", "default": "Off"},
+            {
+                "key": "on_color",
+                "type": "color",
+                "label": "On Color",
+                "default": [102, 166, 30],
+            },
+            {
+                "key": "off_color",
+                "type": "color",
+                "label": "Off Color",
+                "default": [231, 76, 60],
+            },
+            {"key": "icon", "type": "icon", "label": "Icon"},
+            {
+                "key": "show_status_text",
+                "type": "boolean",
+                "label": "Show Status Text",
+                "default": True,
+            },
         ],
     },
     "media": {
@@ -166,12 +222,8 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
         "needs_entity": True,
         "entity_domains": ["media_player"],
         "options": [
-            {
-                "key": "show_album_art",
-                "type": "boolean",
-                "label": "Show Album Art",
-                "default": True,
-            },
+            {"key": "show_artist", "type": "boolean", "label": "Show Artist", "default": True},
+            {"key": "show_album", "type": "boolean", "label": "Show Album", "default": False},
             {"key": "show_progress", "type": "boolean", "label": "Show Progress", "default": True},
         ],
     },
@@ -186,6 +238,35 @@ WIDGET_TYPE_SCHEMAS: dict[str, dict[str, Any]] = {
                 "label": "Fit Mode",
                 "options": ["cover", "contain"],
                 "default": "cover",
+            },
+            {"key": "show_label", "type": "boolean", "label": "Show Label", "default": False},
+        ],
+    },
+    "multi_progress": {
+        "name": "Multi Progress",
+        "needs_entity": False,
+        "options": [
+            {"key": "title", "type": "text", "label": "Title"},
+            {"key": "items", "type": "progress_items", "label": "Progress Items"},
+        ],
+    },
+    "status_list": {
+        "name": "Status List",
+        "needs_entity": False,
+        "options": [
+            {"key": "title", "type": "text", "label": "Title"},
+            {"key": "entities", "type": "status_entities", "label": "Status Entities"},
+            {
+                "key": "on_color",
+                "type": "color",
+                "label": "On Color",
+                "default": [102, 166, 30],
+            },
+            {
+                "key": "off_color",
+                "type": "color",
+                "label": "Off Color",
+                "default": [231, 76, 60],
             },
         ],
     },

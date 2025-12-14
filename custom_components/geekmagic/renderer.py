@@ -442,6 +442,7 @@ class Renderer:
         color: tuple[int, int, int] = COLOR_CYAN,
         fill: bool = True,
         smooth: bool = True,
+        gradient: bool = False,
     ) -> None:
         """Draw a sparkline chart with optional smoothing.
 
@@ -452,6 +453,7 @@ class Renderer:
             color: Line color
             fill: Whether to fill area under the line
             smooth: Whether to use spline interpolation for smooth curves
+            gradient: Whether to use gradient coloring (cool to warm based on value)
         """
         if not data or len(data) < 2:
             return
@@ -487,7 +489,19 @@ class Renderer:
         # Draw filled area
         if fill:
             fill_points = [(x1, y2), *int_points, (x2, y2)]
-            fill_color = (color[0] // 4, color[1] // 4, color[2] // 4)
+            if gradient:
+                # Gradient: blend between cool (blue) for low values and warm (orange) for high
+                # Use the average normalized value to pick a blend
+                avg_normalized = sum((v - min_val) / range_val for v in data) / len(data)
+                # Cool: (70, 130, 180) - Steel blue
+                # Warm: (255, 140, 0) - Dark orange
+                fill_color = (
+                    int(70 + (255 - 70) * avg_normalized) // 4,
+                    int(130 + (140 - 130) * avg_normalized) // 4,
+                    int(180 + (0 - 180) * avg_normalized) // 4,
+                )
+            else:
+                fill_color = (color[0] // 4, color[1] // 4, color[2] // 4)
             draw.polygon(fill_points, fill=fill_color)
 
         # Draw line

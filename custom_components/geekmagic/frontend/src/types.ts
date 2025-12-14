@@ -94,12 +94,44 @@ export interface WidgetTypeSchema {
 
 export interface WidgetOption {
   key: string;
-  type: "boolean" | "select" | "number" | "text";
+  type:
+    | "boolean"
+    | "select"
+    | "number"
+    | "text"
+    | "icon"
+    | "color"
+    | "entity"
+    | "thresholds"
+    | "progress_items"
+    | "status_entities";
   label: string;
   default?: unknown;
   options?: string[];
   min?: number;
   max?: number;
+  placeholder?: string;
+}
+
+// Complex option types for array editors
+export interface ProgressItem {
+  entity_id: string;
+  label?: string;
+  target?: number;
+  color?: [number, number, number];
+  icon?: string;
+  unit?: string;
+}
+
+export interface StatusEntity {
+  entity_id: string;
+  label?: string;
+  icon?: string;
+}
+
+export interface ColorThreshold {
+  value: number;
+  color: [number, number, number];
 }
 
 export interface LayoutTypeInfo {
