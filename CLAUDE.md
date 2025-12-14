@@ -306,11 +306,10 @@ npm run build  # Build production bundle
 
 ### Cache Busting
 
-The panel uses version-based cache busting. When the integration version in `manifest.json` changes, browsers will automatically fetch the new JS bundle (via `?v={version}` query parameter).
+The panel uses content-hash based cache busting. A SHA256 hash of the JS file is appended to the URL (via `?h={hash}` query parameter). When the file content changes, the hash changes, and browsers automatically fetch the new version.
 
 ### After Frontend Changes
 
 1. Make changes in `frontend/src/`
 2. Run `npm run build` to regenerate `dist/`
 3. Commit both source and dist changes
-4. Bump version in `manifest.json` if releasing

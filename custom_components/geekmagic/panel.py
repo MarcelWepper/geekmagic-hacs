@@ -5,11 +5,11 @@ Registers a sidebar panel for the GeekMagic configuration UI.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from pathlib import Path
 
 from homeassistant.core import HomeAssistant
-from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN
 
@@ -54,15 +54,6 @@ async def async_register_panel(hass: HomeAssistant) -> bool:
         # Don't fail - panel_custom might not be needed in test environments
         return True
 
-    # Get integration version for cache busting
-    # This ensures browsers fetch new JS when the integration updates
-    try:
-        integration = await async_get_integration(hass, DOMAIN)
-        version = str(integration.version) if integration.version else "dev"
-    except Exception:
-        version = "dev"
-    module_url = f"{PANEL_MODULE_URL_BASE}?v={version}"
-
     # Check if frontend files exist
     panel_js = FRONTEND_DIR / "geekmagic-panel.js"
     if not panel_js.exists():
@@ -75,6 +66,14 @@ async def async_register_panel(hass: HomeAssistant) -> bool:
         FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
         panel_js.write_text(_get_placeholder_panel())
         _LOGGER.info("Created placeholder panel at %s", panel_js)
+
+    # Generate content hash for cache busting
+    # This ensures browsers fetch new JS when the file changes (on any commit)
+    try:
+        content_hash = await hass.async_add_executor_job(_get_file_hash, panel_js)
+    except Exception:
+        content_hash = "dev"
+    module_url = f"{PANEL_MODULE_URL_BASE}?h={content_hash}"
 
     # Register static path for frontend files
     try:
@@ -110,7 +109,7 @@ async def async_register_panel(hass: HomeAssistant) -> bool:
                 "domain": DOMAIN,
             },
         )
-        _LOGGER.info("Registered GeekMagic panel at /%s (v%s)", PANEL_URL_PATH, version)
+        _LOGGER.info("Registered GeekMagic panel at /%s (h=%s)", PANEL_URL_PATH, content_hash)
     except Exception:
         _LOGGER.exception("Failed to register panel")
         return False
@@ -132,6 +131,12 @@ async def async_unregister_panel(hass: HomeAssistant) -> None:
             _LOGGER.debug("Unregistered GeekMagic panel")
     except Exception as err:
         _LOGGER.warning("Failed to unregister panel: %s", err)
+
+
+def _get_file_hash(path: Path) -> str:
+    """Get short hash of file content for cache busting."""
+    content = path.read_bytes()
+    return hashlib.sha256(content).hexdigest()[:8]
 
 
 def _get_placeholder_panel() -> str:

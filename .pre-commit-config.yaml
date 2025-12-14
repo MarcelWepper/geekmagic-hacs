@@ -22,3 +22,10 @@ repos:
         types: [python]
         pass_filenames: false
         stages: [pre-commit]
+
+      - id: frontend-dist-check
+        name: frontend dist check
+        entry: ./scripts/check-frontend-dist.sh
+        language: script
+        pass_filenames: false
+        stages: [pre-commit]
