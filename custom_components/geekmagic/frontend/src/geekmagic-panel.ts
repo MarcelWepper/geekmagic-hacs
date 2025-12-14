@@ -899,12 +899,12 @@ export class GeekMagicPanel extends LitElement {
         rows = 2;
         break;
       case "grid_2x3":
-        cols = 2;
-        rows = 3;
-        break;
-      case "grid_3x2":
         cols = 3;
         rows = 2;
+        break;
+      case "grid_3x2":
+        cols = 2;
+        rows = 3;
         break;
       case "hero":
         cols = 3;

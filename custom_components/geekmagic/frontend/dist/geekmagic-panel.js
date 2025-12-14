@@ -1010,10 +1010,10 @@ let g = class extends M {
         i = 2;
         break;
       case "grid_2x3":
-        i = 2;
+        i = 3;
         break;
       case "grid_3x2":
-        i = 3;
+        i = 2;
         break;
       case "hero":
         i = 3, r = !0;
