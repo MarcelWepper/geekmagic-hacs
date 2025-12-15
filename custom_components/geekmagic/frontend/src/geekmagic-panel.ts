@@ -42,7 +42,7 @@ export class GeekMagicPanel extends LitElement {
   @property({ attribute: false }) panel!: PanelInfo;
 
   // Internal state
-  @state() private _page: "views" | "devices" | "editor" = "views";
+  @state() private _page: "main" | "editor" = "main";
   @state() private _config: GeekMagicConfig | null = null;
   @state() private _views: ViewConfig[] = [];
   @state() private _devices: DeviceConfig[] = [];
@@ -148,6 +148,28 @@ export class GeekMagicPanel extends LitElement {
     .add-card:hover {
       border-color: var(--primary-color);
       color: var(--primary-color);
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-header {
+      font-size: 18px;
+      font-weight: 500;
+      margin: 0 0 16px 0;
+      color: var(--primary-text-color);
+    }
+
+    .empty-state-inline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      color: var(--secondary-text-color);
+      background: var(--card-background-color);
+      border-radius: 12px;
     }
 
     /* Editor */
@@ -590,7 +612,7 @@ export class GeekMagicPanel extends LitElement {
       this._views = this._views.map((v) =>
         v.id === this._editingView!.id ? this._editingView! : v
       );
-      this._page = "views";
+      this._page = "main";
       this._editingView = null;
     } catch (err) {
       console.error("Failed to save view:", err);
@@ -697,133 +719,105 @@ export class GeekMagicPanel extends LitElement {
         <ha-icon icon="mdi:monitor-dashboard"></ha-icon>
         <span class="header-title">GeekMagic</span>
       </div>
-      ${this._page !== "editor"
-        ? html`
-            <ha-tab-group @wa-tab-show=${this._handleTabChange}>
-              <ha-tab-group-tab
-                slot="nav"
-                panel="views"
-                .active=${this._page === "views"}
-              >
-                Views
-              </ha-tab-group-tab>
-              <ha-tab-group-tab
-                slot="nav"
-                panel="devices"
-                .active=${this._page === "devices"}
-              >
-                Devices
-              </ha-tab-group-tab>
-            </ha-tab-group>
-          `
-        : nothing}
       <div class="content">${this._renderPage()}</div>
     `;
   }
 
   private _renderPage() {
     switch (this._page) {
-      case "views":
-        return this._renderViewsList();
-      case "devices":
-        return this._renderDevicesList();
+      case "main":
+        return this._renderMain();
       case "editor":
         return this._renderEditor();
     }
   }
 
-  private _handleTabChange(ev: CustomEvent) {
-    const tab = ev.target as HTMLElement;
-    const panel = tab.getAttribute("panel");
-    if (panel === "views" || panel === "devices") {
-      this._page = panel;
-    }
-  }
-
-  private _renderViewsList() {
+  private _renderMain() {
     return html`
-      <div class="views-grid">
-        ${this._views.map(
-          (view) => html`
-            <ha-card class="view-card" @click=${() => this._editView(view)}>
-              <div class="card-header">
-                <h3>${view.name}</h3>
-                <ha-icon-button
-                  .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
-                  @click=${(e: Event) => {
-                    e.stopPropagation();
-                    this._deleteView(view);
-                  }}
-                ></ha-icon-button>
+      <!-- Devices Section -->
+      <div class="section">
+        <h2 class="section-header">Devices</h2>
+        ${this._devices.length === 0
+          ? html`
+              <div class="empty-state-inline">
+                <ha-icon icon="mdi:monitor-off"></ha-icon>
+                <span>No devices configured. Add a device through Settings → Devices & Services.</span>
               </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  ${this._config?.layout_types[view.layout]?.name || view.layout}
-                  &bull; ${this._config?.themes[view.theme] || view.theme}
-                  &bull; ${view.widgets.length} widgets
-                </div>
+            `
+          : html`
+              <div class="devices-list">
+                ${this._devices.map(
+                  (device) => html`
+                    <ha-card>
+                      <div class="card-content" style="padding-top: 16px;">
+                        <div class="device-header">
+                          <span class="device-name">${device.name}</span>
+                          <span class="device-status ${device.online ? "online" : "offline"}">
+                            ${device.online ? "Online" : "Offline"}
+                          </span>
+                        </div>
+                        <div class="views-checkboxes">
+                          ${this._views.length === 0
+                            ? html`<p style="color: var(--secondary-text-color); margin: 8px 0 0;">
+                                No views available. Create a view below.
+                              </p>`
+                            : this._views.map(
+                                (view) => html`
+                                  <label class="view-checkbox">
+                                    <ha-checkbox
+                                      .checked=${device.assigned_views.includes(view.id)}
+                                      @change=${(e: Event) =>
+                                        this._toggleDeviceView(
+                                          device,
+                                          view.id,
+                                          (e.target as HTMLInputElement).checked
+                                        )}
+                                    ></ha-checkbox>
+                                    ${view.name}
+                                  </label>
+                                `
+                              )}
+                        </div>
+                      </div>
+                    </ha-card>
+                  `
+                )}
               </div>
-            </ha-card>
-          `
-        )}
-        <div class="add-card" @click=${this._createView}>
-          <ha-icon icon="mdi:plus"></ha-icon>
-          <span style="margin-left: 8px">Add View</span>
-        </div>
+            `}
       </div>
-    `;
-  }
 
-  private _renderDevicesList() {
-    if (this._devices.length === 0) {
-      return html`
-        <div class="empty-state">
-          <ha-icon icon="mdi:monitor-off"></ha-icon>
-          <p>No GeekMagic devices configured.</p>
-          <p>Add a device through Settings → Devices & Services.</p>
+      <!-- Views Section -->
+      <div class="section">
+        <h2 class="section-header">Views</h2>
+        <div class="views-grid">
+          ${this._views.map(
+            (view) => html`
+              <ha-card class="view-card" @click=${() => this._editView(view)}>
+                <div class="card-header">
+                  <h3>${view.name}</h3>
+                  <ha-icon-button
+                    .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
+                      this._deleteView(view);
+                    }}
+                  ></ha-icon-button>
+                </div>
+                <div class="card-content">
+                  <div class="card-meta">
+                    ${this._config?.layout_types[view.layout]?.name || view.layout}
+                    &bull; ${this._config?.themes[view.theme] || view.theme}
+                    &bull; ${view.widgets.length} widgets
+                  </div>
+                </div>
+              </ha-card>
+            `
+          )}
+          <div class="add-card" @click=${this._createView}>
+            <ha-icon icon="mdi:plus"></ha-icon>
+            <span style="margin-left: 8px">Add View</span>
+          </div>
         </div>
-      `;
-    }
-
-    return html`
-      <div class="devices-list">
-        ${this._devices.map(
-          (device) => html`
-            <ha-card>
-              <div class="card-content" style="padding-top: 16px;">
-                <div class="device-header">
-                  <span class="device-name">${device.name}</span>
-                  <span class="device-status ${device.online ? "online" : "offline"}">
-                    ${device.online ? "Online" : "Offline"}
-                  </span>
-                </div>
-                <div class="views-checkboxes">
-                  <div class="section-title" style="margin-top: 8px;">Assigned Views</div>
-                  ${this._views.length === 0
-                    ? html`<p style="color: var(--secondary-text-color)">
-                        No views available. Create a view first.
-                      </p>`
-                    : this._views.map(
-                        (view) => html`
-                          <label class="view-checkbox">
-                            <ha-checkbox
-                              .checked=${device.assigned_views.includes(view.id)}
-                              @change=${(e: Event) =>
-                                this._toggleDeviceView(
-                                  device,
-                                  view.id,
-                                  (e.target as HTMLInputElement).checked
-                                )}
-                            ></ha-checkbox>
-                            ${view.name}
-                          </label>
-                        `
-                      )}
-                </div>
-              </div>
-            </ha-card>
-          `
-        )}
       </div>
     `;
   }
@@ -838,7 +832,7 @@ export class GeekMagicPanel extends LitElement {
       <div class="editor-header">
         <ha-icon-button
           .path=${"M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"}
-          @click=${() => (this._page = "views")}
+          @click=${() => (this._page = "main")}
         ></ha-icon-button>
         <ha-textfield
           .value=${this._editingView.name}
