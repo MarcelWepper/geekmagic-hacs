@@ -206,6 +206,11 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
         self._last_brightness_poll: float = 0  # Timestamp of last brightness poll
         self._brightness_poll_interval: float = 600  # 10 minutes
 
+        # Display mode tracking
+        # "custom" = integration renders views, "builtin" = device shows built-in mode
+        self._display_mode: str = "custom"
+        self._builtin_theme: int = 0  # Device theme when in builtin mode (0-2)
+
         # Get refresh interval from options
         interval = self.options.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)
 
@@ -620,8 +625,35 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
             try:
                 self._device_state = await self.device.get_state()
                 self._space_info = await self.device.get_space()
+
+                # Sync display mode with device state on first poll
+                # If device is in a built-in theme, respect that
+                if self._device_state and self._device_state.theme is not None:
+                    device_theme = self._device_state.theme
+                    if device_theme < 3 and self._display_mode == "custom":
+                        # Device is in built-in mode but we thought we were in custom
+                        # This can happen on startup - sync to device state
+                        _LOGGER.debug(
+                            "Syncing display mode from device: builtin (theme=%d)",
+                            device_theme,
+                        )
+                        self._display_mode = "builtin"
+                        self._builtin_theme = device_theme
             except Exception as e:
                 _LOGGER.debug("Failed to fetch device state: %s", e)
+
+            # Skip rendering when in built-in mode
+            # The device handles display in built-in modes (Clock, Weather, System Info)
+            if self._display_mode == "builtin":
+                _LOGGER.debug(
+                    "Skipping render - device in built-in mode (theme=%d)",
+                    self._builtin_theme,
+                )
+                return {
+                    "success": True,
+                    "builtin_mode": True,
+                    "theme": self._builtin_theme,
+                }
 
             # Pre-fetch camera images and chart history (must be done in async context)
             await self._async_fetch_camera_images()
@@ -744,6 +776,31 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
         """Set current screen index."""
         self._current_screen = index
 
+    @property
+    def display_mode(self) -> str:
+        """Get current display mode ('custom' or 'builtin')."""
+        return self._display_mode
+
+    @property
+    def builtin_theme(self) -> int:
+        """Get current builtin theme number (0-2) when in builtin mode."""
+        return self._builtin_theme
+
+    def set_display_mode(self, mode: str, value: int = 0) -> None:
+        """Set display mode.
+
+        Args:
+            mode: Either 'custom' or 'builtin'
+            value: For 'custom', the view index. For 'builtin', the theme number.
+        """
+        self._display_mode = mode
+        if mode == "builtin":
+            self._builtin_theme = value
+        else:
+            # Custom mode - value is view index
+            self._current_screen = value
+            self._last_screen_change = time.time()
+
     async def async_set_brightness(self, brightness: int) -> None:
         """Set display brightness.
 
@@ -753,7 +810,19 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
         await self.device.set_brightness(brightness)
 
     async def async_refresh_display(self) -> None:
-        """Force an immediate display refresh."""
+        """Force an immediate display refresh.
+
+        If we were in builtin mode, this switches back to custom mode
+        and ensures the device theme is set to 3 (custom image mode).
+        """
+        # If switching from builtin to custom, ensure device is in theme 3
+        if self._display_mode == "builtin":
+            _LOGGER.debug("Switching from builtin to custom mode")
+            self._display_mode = "custom"
+
+        # Ensure device is in custom image mode (theme=3)
+        await self.device.set_theme(3)
+
         self._update_preview = True  # Update preview on manual refresh
         await self.async_request_refresh()
 
