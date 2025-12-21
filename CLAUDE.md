@@ -137,26 +137,65 @@ GET  /app.json               # Get device state
 - Use high contrast colors (light on dark)
 - JPEG upload is faster than PNG (~2.5s vs ~5.8s)
 
-## Font Size Conventions
+## Font Sizing System
 
-Use consistent font size names when calling `ctx.get_font()`. Fonts are automatically scaled based on container height.
+Fonts are automatically scaled based on container height. Two naming systems are supported:
 
-| Size Name | Use Case | Example Widgets |
-|-----------|----------|-----------------|
-| `tiny` | Small labels, secondary info | Entity name below value |
-| `small` | Labels, status text | Icon labels, humidity |
-| `regular` | Standard text, body content | Default text widget |
-| `medium` | Emphasized values | Gauge values |
-| `large` | Primary values | Entity values |
-| `xlarge` | Hero values | Clock time, temperature |
-| `huge` | Maximum emphasis | Single large values |
+### Semantic Sizes (Preferred)
+
+Use these for new widgets - they scale proportionally to container height:
+
+| Size | Ratio | Use Case |
+|------|-------|----------|
+| `primary` | 35% | Main value (clock time, large number) |
+| `secondary` | 20% | Supporting info (date, unit) |
+| `tertiary` | 12% | Labels, captions |
+
+```python
+# Get font with semantic size
+font = ctx.get_font("primary", bold=True)
+font = ctx.get_font("secondary")
+font = ctx.get_font("tertiary", adjust=-1)  # Slightly smaller
+```
+
+### Auto-Fit Text
+
+For text that should fill available space (like clock displays):
+
+```python
+# Get largest font that fits within bounds
+font = ctx.fit_text("12:45", max_width=ctx.width * 0.95)
+font = ctx.fit_text("Hello", max_width=100, max_height=50, bold=True)
+```
+
+### Relative Adjustments
+
+Fine-tune sizes with `adjust` parameter (-2 to +2, each step is ~15%):
+
+```python
+font = ctx.get_font("secondary", adjust=+1)  # 15% larger
+font = ctx.get_font("primary", adjust=-1)    # 15% smaller
+```
+
+### Legacy Sizes
+
+Still supported for backward compatibility:
+
+| Size Name | Use Case |
+|-----------|----------|
+| `tiny` | Small labels |
+| `small` | Labels, status |
+| `regular` | Standard text |
+| `medium` | Emphasized values |
+| `large` | Primary values |
+| `xlarge` | Hero values |
+| `huge` | Maximum emphasis |
 
 **Best practices:**
-- Use `xlarge` for primary displayed values (clock, temperature)
-- Use `tiny` or `small` for labels that accompany values
-- Use `regular` as the default
+- Prefer semantic sizes (`primary`, `secondary`, `tertiary`) for new code
+- Use `ctx.fit_text()` when text should fill available space
 - Add `bold=True` for values that need emphasis
-- Fonts scale automatically - don't use pixel sizes directly
+- Never specify pixel sizes directly
 
 ## Testing
 
