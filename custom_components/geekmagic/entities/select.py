@@ -18,13 +18,16 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-# Built-in device themes/modes
-DEVICE_MODES = {
-    "custom": "Custom Views",
-    "clock": "Clock",
-    "weather": "Weather",
-    "system": "System Info",
+# Built-in device modes with their theme numbers
+# These are handled by the device firmware, not rendered by the integration
+BUILTIN_MODES = {
+    "Clock": 0,
+    "Weather": 1,
+    "System Info": 2,
 }
+
+# Prefix used to identify custom views in the combined select
+CUSTOM_VIEW_PREFIX = ""  # No prefix - views shown by name directly
 
 
 async def async_setup_entry(
@@ -36,114 +39,90 @@ async def async_setup_entry(
     coordinator: GeekMagicCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     entities = [
-        GeekMagicModeSelect(coordinator),
-        GeekMagicCurrentViewSelect(coordinator),
+        GeekMagicDisplaySelect(coordinator),
     ]
 
     async_add_entities(entities)
 
 
-class GeekMagicModeSelect(GeekMagicEntity, SelectEntity):
-    """Select entity for device mode."""
+class GeekMagicDisplaySelect(GeekMagicEntity, SelectEntity):
+    """Unified select entity for choosing what to display.
 
-    _attr_name = "Mode"
-    _attr_icon = "mdi:monitor-dashboard"
+    Combines device built-in modes (Clock, Weather, System Info) with
+    custom views configured in the integration. This provides a single
+    control point for users to choose what appears on the display.
+    """
 
-    def __init__(self, coordinator: GeekMagicCoordinator) -> None:
-        """Initialize mode select."""
-        super().__init__(coordinator, "mode")
-
-    @property
-    def options(self) -> list[str]:
-        """Return available modes."""
-        return list(DEVICE_MODES.values())
-
-    @property
-    def current_option(self) -> str | None:
-        """Return current mode."""
-        if self.coordinator.device_state:
-            theme = self.coordinator.device_state.theme
-            # Theme 3 = custom image mode (our integration)
-            if theme == 3:
-                return DEVICE_MODES["custom"]
-            if theme == 0:
-                return DEVICE_MODES["clock"]
-            if theme == 1:
-                return DEVICE_MODES["weather"]
-            if theme == 2:
-                return DEVICE_MODES["system"]
-        return DEVICE_MODES["custom"]
-
-    async def async_select_option(self, option: str) -> None:
-        """Select a mode."""
-        theme_map = {
-            DEVICE_MODES["custom"]: 3,
-            DEVICE_MODES["clock"]: 0,
-            DEVICE_MODES["weather"]: 1,
-            DEVICE_MODES["system"]: 2,
-        }
-        theme = theme_map.get(option, 3)
-        await self.coordinator.device.set_theme(theme)
-        await self.coordinator.async_request_refresh()
-
-
-class GeekMagicCurrentViewSelect(GeekMagicEntity, SelectEntity):
-    """Select entity for current view (when in custom mode)."""
-
-    _attr_name = "Current View"
-    _attr_icon = "mdi:view-dashboard"
+    _attr_name = "Display"
+    _attr_icon = "mdi:monitor"
 
     def __init__(self, coordinator: GeekMagicCoordinator) -> None:
-        """Initialize current view select."""
-        super().__init__(coordinator, "current_view")
+        """Initialize display select."""
+        super().__init__(coordinator, "display")
 
-    @property
-    def options(self) -> list[str]:
-        """Return available views."""
+    def _get_custom_view_names(self) -> list[str]:
+        """Get list of custom view names."""
         store = self.coordinator.get_store()
         if not store:
             return []
 
         assigned_views = self.coordinator.options.get("assigned_views", [])
-        options = []
+        names = []
         for view_id in assigned_views:
             view = store.get_view(view_id)
             if view:
-                options.append(view.get("name", view_id))
-        return options if options else ["No views assigned"]
+                names.append(view.get("name", view_id))
+        return names
+
+    @property
+    def options(self) -> list[str]:
+        """Return all available display options.
+
+        Built-in modes come first, followed by custom views.
+        """
+        options = list(BUILTIN_MODES.keys())
+        options.extend(self._get_custom_view_names())
+        return options if options else ["Clock"]
 
     @property
     def current_option(self) -> str | None:
-        """Return current view name."""
-        store = self.coordinator.get_store()
-        if not store:
-            return None
+        """Return currently selected display option."""
+        # Check if coordinator is in builtin mode
+        if self.coordinator.display_mode == "builtin":
+            theme = self.coordinator.builtin_theme
+            for mode_name, mode_theme in BUILTIN_MODES.items():
+                if mode_theme == theme:
+                    return mode_name
+            return "Clock"
 
-        assigned_views = self.coordinator.options.get("assigned_views", [])
-        if not assigned_views:
-            return "No views assigned"
+        # In custom mode - return current view name
+        view_names = self._get_custom_view_names()
+        if not view_names:
+            # No custom views, default to Clock
+            return "Clock"
 
         current_idx = self.coordinator.current_screen
-        if 0 <= current_idx < len(assigned_views):
-            view_id = assigned_views[current_idx]
-            view = store.get_view(view_id)
-            if view:
-                return view.get("name", view_id)
-        return None
+        if 0 <= current_idx < len(view_names):
+            return view_names[current_idx]
+
+        return view_names[0] if view_names else "Clock"
 
     async def async_select_option(self, option: str) -> None:
-        """Select a view."""
-        if option == "No views assigned":
-            return
-
-        store = self.coordinator.get_store()
-        if not store:
-            return
-
-        assigned_views = self.coordinator.options.get("assigned_views", [])
-        for idx, view_id in enumerate(assigned_views):
-            view = store.get_view(view_id)
-            if view and view.get("name") == option:
-                self.coordinator.set_current_screen(idx)
+        """Handle selection of a display option."""
+        if option in BUILTIN_MODES:
+            # Built-in mode selected - set device theme and enter builtin mode
+            theme = BUILTIN_MODES[option]
+            _LOGGER.debug("Switching to built-in mode: %s (theme=%d)", option, theme)
+            await self.coordinator.device.set_theme(theme)
+            self.coordinator.set_display_mode("builtin", theme)
+            # Don't refresh - just poll state to update UI
+            await self.coordinator.async_request_refresh()
+        else:
+            # Custom view selected
+            view_names = self._get_custom_view_names()
+            if option in view_names:
+                view_idx = view_names.index(option)
+                _LOGGER.debug("Switching to custom view: %s (index=%d)", option, view_idx)
+                self.coordinator.set_display_mode("custom", view_idx)
+                # Immediate refresh to show the custom view
                 await self.coordinator.async_refresh_display()
-                break
