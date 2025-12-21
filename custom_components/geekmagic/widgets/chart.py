@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
@@ -152,10 +153,8 @@ class ChartWidget(Widget):
         label = self.config.label
 
         if entity is not None:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 current_value = float(entity.state)
-            except (ValueError, TypeError):
-                pass
             unit = entity.unit or ""
             if not label:
                 label = entity.friendly_name

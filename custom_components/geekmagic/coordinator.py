@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import time
 from datetime import datetime, timedelta
@@ -608,19 +609,15 @@ class GeekMagicCoordinator(DataUpdateCoordinator):
             if isinstance(widget, CameraWidget) and widget.config.entity_id:
                 image_bytes = self._camera_images.get(widget.config.entity_id)
                 if image_bytes:
-                    try:
+                    with contextlib.suppress(Exception):
                         image = Image.open(BytesIO(image_bytes))
-                    except Exception:
-                        pass
 
             # Handle clock widget timezone override
             widget_now = now
             if isinstance(widget, ClockWidget) and hasattr(widget, "timezone") and widget.timezone:
-                try:
+                with contextlib.suppress(Exception):
                     widget_tz = ZoneInfo(widget.timezone)
                     widget_now = datetime.now(tz=widget_tz)
-                except Exception:
-                    pass
 
             states[slot.index] = WidgetState(
                 entity=primary_entity,

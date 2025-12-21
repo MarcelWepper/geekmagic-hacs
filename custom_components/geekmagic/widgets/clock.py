@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from ..const import COLOR_GRAY, COLOR_WHITE
@@ -87,7 +87,7 @@ class ClockWidget(Widget):
             state: Widget state with current time
         """
         # Get time from state (coordinator handles timezone)
-        now = state.now or datetime.now()
+        now = state.now or datetime.now(tz=UTC)
 
         # Format time
         if self.show_seconds:

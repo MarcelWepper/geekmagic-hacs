@@ -12,7 +12,7 @@ from ..const import (
     COLOR_WHITE,
 )
 from .base import Widget, WidgetConfig
-from .components import Component
+from .components import Column, Component, Icon, Text
 
 if TYPE_CHECKING:
     from ..render_context import RenderContext
@@ -202,10 +202,8 @@ class WeatherDisplay(Component):
             )
 
 
-def WeatherPlaceholder() -> Component:
+def _weather_placeholder() -> Component:
     """Create placeholder component when no weather data."""
-    from .components import Column, Icon, Text
-
     return Column(
         children=[
             Icon("weather-cloudy", color=COLOR_GRAY, max_size=48),
@@ -234,7 +232,7 @@ class WeatherWidget(Widget):
         entity = state.entity
 
         if entity is None:
-            return WeatherPlaceholder()
+            return _weather_placeholder()
 
         return WeatherDisplay(
             temperature=entity.get("temperature", "--"),

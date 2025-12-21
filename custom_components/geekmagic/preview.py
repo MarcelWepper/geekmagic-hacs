@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from .const import (
@@ -250,8 +250,6 @@ def _build_widget_state_for_preview(
     Returns:
         WidgetState for the widget
     """
-    from datetime import datetime
-
     widget_type = widget_config.get("type", "")
     entity_id = widget_config.get("entity_id")
     options = widget_config.get("options", {})

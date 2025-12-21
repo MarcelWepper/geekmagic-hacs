@@ -9,7 +9,7 @@ from PIL import Image
 
 from ..const import COLOR_GRAY, COLOR_WHITE
 from .base import Widget, WidgetConfig
-from .components import Color, Component
+from .components import Color, Column, Component, Icon, Text
 
 if TYPE_CHECKING:
     from ..render_context import RenderContext
@@ -58,10 +58,8 @@ class CameraImage(Component):
             )
 
 
-def CameraPlaceholder(label: str = "No Image") -> Component:
+def _camera_placeholder(label: str = "No Image") -> Component:
     """Create placeholder component when no camera image available."""
-    from .components import Column, Icon, Text
-
     return Column(
         children=[
             Icon("camera", color=COLOR_GRAY, max_size=48),
@@ -90,7 +88,7 @@ class CameraWidget(Widget):
             state: Widget state with camera image
         """
         if state.image is None:
-            return CameraPlaceholder(label=self.config.label or "No Image")
+            return _camera_placeholder(label=self.config.label or "No Image")
 
         label = None
         if self.show_label:
