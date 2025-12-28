@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from PIL import Image
 
 from ..const import COLOR_CYAN
+from ..render_context import SizeCategory, get_size_category
 from .base import Widget, WidgetConfig
 from .components import (
     THEME_TEXT_PRIMARY,
@@ -98,18 +99,17 @@ class AlbumArt(Component):
         if not self.show_overlay:
             return
 
-        # Determine sizing based on available space
-        # 3x3 grid on 240px = ~75px cells, 2x1 = ~115px height
-        is_micro = height < 78  # Very small cells - title only, tiny font
-        is_tiny = height < 120  # Small cells - title only
-        is_small = height < 180  # Medium cells - title + artist (no time)
+        # Determine sizing based on available space using standard size categories
+        size = get_size_category(height)
+        is_micro = size == SizeCategory.MICRO
+        is_compact = size in (SizeCategory.MICRO, SizeCategory.TINY, SizeCategory.SMALL)
+        show_artist = size in (SizeCategory.MEDIUM, SizeCategory.LARGE)
+        show_time = size == SizeCategory.LARGE
 
         # Overlay ratio varies by size - smaller for small cells
         if is_micro:
             overlay_ratio = 0.28  # Minimal overlay for micro
-        elif is_tiny:
-            overlay_ratio = 0.32
-        elif is_small:
+        elif is_compact:
             overlay_ratio = 0.30
         else:
             overlay_ratio = 0.28
@@ -126,12 +126,12 @@ class AlbumArt(Component):
         # Build text components
         text_children: list[Component] = []
 
-        # Title - always show, smaller font for micro cells
+        # Title - always show, smaller font for compact cells
         if self.title:
             if is_micro:
                 title_font = "tiny"
                 title_bold = False
-            elif is_tiny:
+            elif is_compact:
                 title_font = "tiny"
                 title_bold = True
             else:
@@ -149,8 +149,8 @@ class AlbumArt(Component):
                 )
             )
 
-        # Artist - hide in micro/tiny mode
-        if self.artist and not is_tiny and not is_micro:
+        # Artist - show only when there's room (MEDIUM, LARGE)
+        if self.artist and show_artist:
             text_children.append(
                 Text(
                     self.artist,
@@ -161,8 +161,8 @@ class AlbumArt(Component):
                 )
             )
 
-        # Time display for larger cells only
-        if self.duration > 0 and not is_small and not is_tiny and not is_micro:
+        # Time display for large cells only
+        if self.duration > 0 and show_time:
             pos_str = _format_time(self.position)
             dur_str = _format_time(self.duration)
             time_str = f"{pos_str} / {dur_str}"

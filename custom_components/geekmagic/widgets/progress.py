@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
 from ..const import COLOR_CYAN, COLOR_DARK_GRAY
+from ..render_context import SizeCategory, get_size_category
 from .base import Widget, WidgetConfig
 from .components import (
     THEME_TEXT_PRIMARY,
@@ -75,12 +76,13 @@ class ProgressDisplay(Component):
             value_text += f" {self.unit}"
         label_text = self.label.upper()
 
-        # Adaptive layout based on size
-        # Compact: small cells in dense grids
-        # Standard: medium cells, horizontal layout
-        # Expanded: large cells, vertical layout with icon/label separate from value
-        is_compact = height < 80
-        is_expanded = height >= 150
+        # Adaptive layout based on size using standard size categories
+        # Compact: MICRO cells in dense grids
+        # Standard: TINY/SMALL cells, horizontal layout
+        # Expanded: MEDIUM/LARGE cells, vertical layout with icon/label separate from value
+        size = get_size_category(height)
+        is_compact = size == SizeCategory.MICRO
+        is_expanded = size in (SizeCategory.MEDIUM, SizeCategory.LARGE)
 
         if is_expanded:
             # Expanded: icon + label on top, value below, bar + percent at bottom

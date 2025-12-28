@@ -7,9 +7,56 @@ container (0, 0 to width, height) instead of absolute canvas coordinates.
 from __future__ import annotations
 
 import logging
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from .const import COLOR_DARK_GRAY, COLOR_PANEL, COLOR_WHITE
+
+
+class SizeCategory(Enum):
+    """Size categories for responsive widget layouts.
+
+    These categories help widgets decide what content to show based on
+    available vertical space. Thresholds are tuned for 240x240 displays
+    with various grid layouts.
+    """
+
+    MICRO = "micro"  # < 78px  - minimal content (3x3 grid cells)
+    TINY = "tiny"  # < 100px - very compact (2x3 cells)
+    SMALL = "small"  # < 140px - compact (2x2 cells)
+    MEDIUM = "medium"  # < 200px - standard
+    LARGE = "large"  # >= 200px - full featured
+
+
+# Threshold constants for size categories
+SIZE_THRESHOLD_MICRO = 78
+SIZE_THRESHOLD_TINY = 100
+SIZE_THRESHOLD_SMALL = 140
+SIZE_THRESHOLD_MEDIUM = 200
+
+
+def get_size_category(height: int) -> SizeCategory:
+    """Get size category for a given height.
+
+    This standalone function can be used by components that receive
+    explicit height parameters rather than relying on ctx.height.
+
+    Args:
+        height: Available height in pixels
+
+    Returns:
+        SizeCategory enum value
+    """
+    if height < SIZE_THRESHOLD_MICRO:
+        return SizeCategory.MICRO
+    if height < SIZE_THRESHOLD_TINY:
+        return SizeCategory.TINY
+    if height < SIZE_THRESHOLD_SMALL:
+        return SizeCategory.SMALL
+    if height < SIZE_THRESHOLD_MEDIUM:
+        return SizeCategory.MEDIUM
+    return SizeCategory.LARGE
+
 
 if TYPE_CHECKING:
     from PIL import Image, ImageDraw
@@ -71,6 +118,70 @@ class RenderContext:
         from .widgets.theme import DEFAULT_THEME
 
         return DEFAULT_THEME
+
+    # =========================================================================
+    # Responsive Size Helpers
+    # =========================================================================
+
+    @property
+    def size_category(self) -> SizeCategory:
+        """Get size category based on container height.
+
+        This helps widgets decide what content to show:
+        - MICRO: Show only essential info (title only)
+        - TINY: Very compact, primary info only
+        - SMALL: Compact, may include secondary info
+        - MEDIUM: Standard layout with most info
+        - LARGE: Full featured with all details
+
+        Returns:
+            SizeCategory enum value
+        """
+        if self.height < SIZE_THRESHOLD_MICRO:
+            return SizeCategory.MICRO
+        if self.height < SIZE_THRESHOLD_TINY:
+            return SizeCategory.TINY
+        if self.height < SIZE_THRESHOLD_SMALL:
+            return SizeCategory.SMALL
+        if self.height < SIZE_THRESHOLD_MEDIUM:
+            return SizeCategory.MEDIUM
+        return SizeCategory.LARGE
+
+    @property
+    def is_compact(self) -> bool:
+        """True if space is limited (MICRO, TINY, or SMALL).
+
+        Use this when you need to simplify layout or hide non-essential
+        elements in constrained spaces.
+
+        Returns:
+            True for MICRO, TINY, or SMALL size categories
+        """
+        return self.size_category in (SizeCategory.MICRO, SizeCategory.TINY, SizeCategory.SMALL)
+
+    @property
+    def show_secondary(self) -> bool:
+        """True if there's room for secondary info.
+
+        Secondary info includes things like: artist name, date, humidity,
+        additional labels, etc.
+
+        Returns:
+            True for MEDIUM or LARGE size categories
+        """
+        return self.size_category in (SizeCategory.MEDIUM, SizeCategory.LARGE)
+
+    @property
+    def show_tertiary(self) -> bool:
+        """True if there's room for tertiary info (full details).
+
+        Tertiary info includes things like: timestamps, detailed values,
+        progress time, extended labels, etc.
+
+        Returns:
+            True for LARGE size category only
+        """
+        return self.size_category == SizeCategory.LARGE
 
     def _abs_point(self, x: int, y: int) -> tuple[int, int]:
         """Convert local point to absolute canvas coordinates."""

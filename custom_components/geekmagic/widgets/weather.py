@@ -10,6 +10,7 @@ from ..const import (
     COLOR_CYAN,
     COLOR_GOLD,
 )
+from ..render_context import SizeCategory, get_size_category
 from .base import Widget, WidgetConfig
 from .components import (
     THEME_TEXT_PRIMARY,
@@ -97,7 +98,12 @@ class WeatherDisplay(Component):
         """Render weather."""
         icon_name = WEATHER_ICONS.get(self.condition, "weather-sunny")
 
-        if height > 120 and self.show_forecast:
+        # Use standard size categories - show forecast in SMALL or larger
+        size = get_size_category(height)
+        is_compact = size in (SizeCategory.MICRO, SizeCategory.TINY)
+        show_full_layout = not is_compact and self.show_forecast
+
+        if show_full_layout:
             component = self._build_full(ctx, width, height, icon_name)
         else:
             component = self._build_compact(ctx, width, height, icon_name)
