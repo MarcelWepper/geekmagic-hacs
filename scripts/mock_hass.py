@@ -138,6 +138,7 @@ def create_smart_home_states(hass: MockHass) -> None:
 
 def create_weather_states(hass: MockHass) -> None:
     """Create mock states for weather dashboard."""
+    # Use realistic ISO datetime format like Home Assistant returns from weather.get_forecasts
     hass.states.set(
         "weather.home",
         "sunny",
@@ -147,9 +148,24 @@ def create_weather_states(hass: MockHass) -> None:
             "wind_speed": 12,
             "friendly_name": "Home",
             "forecast": [
-                {"datetime": "Mon", "condition": "sunny", "temperature": 26},
-                {"datetime": "Tue", "condition": "partlycloudy", "temperature": 23},
-                {"datetime": "Wed", "condition": "rainy", "temperature": 19},
+                {
+                    "datetime": "2025-12-29T00:00:00+00:00",
+                    "condition": "sunny",
+                    "temperature": 26,
+                    "templow": 14,
+                },
+                {
+                    "datetime": "2025-12-30T00:00:00+00:00",
+                    "condition": "partlycloudy",
+                    "temperature": 23,
+                    "templow": 12,
+                },
+                {
+                    "datetime": "2025-12-31T00:00:00+00:00",
+                    "condition": "rainy",
+                    "temperature": 19,
+                    "templow": 10,
+                },
             ],
         },
     )

@@ -898,9 +898,10 @@ class TestWeatherWidget:
         )
 
         # Forecast is now provided via WidgetState, not entity attributes
+        # Use realistic ISO datetime format like Home Assistant returns
         forecast = [
-            {"datetime": "Mon", "condition": "sunny", "temperature": 24},
-            {"datetime": "Tue", "condition": "cloudy", "temperature": 20},
+            {"datetime": "2025-12-29T00:00:00+00:00", "condition": "sunny", "temperature": 24},
+            {"datetime": "2025-12-30T00:00:00+00:00", "condition": "cloudy", "temperature": 20},
         ]
 
         config = WidgetConfig(

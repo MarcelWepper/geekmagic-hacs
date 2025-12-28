@@ -297,14 +297,40 @@ def _build_widget_state_for_preview(
         history = [20, 22, 21, 23, 25, 24, 22, 23, 21, 20, 22, 23]
 
     # Build mock forecast for weather widgets
+    # Use realistic ISO datetime format like Home Assistant returns
     forecast: list[dict[str, Any]] = []
     if widget_type == "weather":
         forecast = [
-            {"datetime": "Mon", "condition": "sunny", "temperature": 26, "templow": 14},
-            {"datetime": "Tue", "condition": "cloudy", "temperature": 22, "templow": 12},
-            {"datetime": "Wed", "condition": "rainy", "temperature": 18, "templow": 10},
-            {"datetime": "Thu", "condition": "partlycloudy", "temperature": 20, "templow": 11},
-            {"datetime": "Fri", "condition": "sunny", "temperature": 24, "templow": 13},
+            {
+                "datetime": "2025-12-29T00:00:00+00:00",
+                "condition": "sunny",
+                "temperature": 26,
+                "templow": 14,
+            },
+            {
+                "datetime": "2025-12-30T00:00:00+00:00",
+                "condition": "cloudy",
+                "temperature": 22,
+                "templow": 12,
+            },
+            {
+                "datetime": "2025-12-31T00:00:00+00:00",
+                "condition": "rainy",
+                "temperature": 18,
+                "templow": 10,
+            },
+            {
+                "datetime": "2026-01-01T00:00:00+00:00",
+                "condition": "partlycloudy",
+                "temperature": 20,
+                "templow": 11,
+            },
+            {
+                "datetime": "2026-01-02T00:00:00+00:00",
+                "condition": "sunny",
+                "temperature": 24,
+                "templow": 13,
+            },
         ]
 
     return WidgetState(

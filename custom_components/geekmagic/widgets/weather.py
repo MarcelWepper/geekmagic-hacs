@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from ..const import (
@@ -44,6 +45,36 @@ WEATHER_ICONS = {
     "lightning-rainy": "weather-lightning-rainy",
     "exceptional": "alert-circle",
 }
+
+# Weekday abbreviations
+WEEKDAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def _parse_forecast_day_name(datetime_str: str, fallback: str) -> str:
+    """Parse datetime string and return weekday abbreviation.
+
+    Args:
+        datetime_str: ISO format datetime string (e.g., "2025-12-29T00:00:00+00:00")
+        fallback: Fallback string if parsing fails
+
+    Returns:
+        Weekday abbreviation (Mon, Tue, etc.) or fallback
+    """
+    if not datetime_str:
+        return fallback
+
+    try:
+        # Try parsing ISO format (with or without timezone)
+        # Remove timezone suffix for simpler parsing
+        dt_str = datetime_str.split("+")[0].split("Z")[0]
+        dt = datetime.fromisoformat(dt_str)
+        return WEEKDAY_NAMES[dt.weekday()]
+    except (ValueError, IndexError):
+        # If parsing fails, try to use first 3 chars as fallback
+        # (might be already a day name like "Mon")
+        if len(datetime_str) >= 3 and datetime_str[:3].isalpha():
+            return datetime_str[:3]
+        return fallback
 
 
 @dataclass
@@ -130,7 +161,7 @@ class WeatherDisplay(Component):
                     day_condition = day.get("condition", "sunny")
                     day_temp = day.get("temperature", "--")
                     day_temp_low = day.get("templow")
-                    day_name = day.get("datetime", "")[:3] if day.get("datetime") else f"D{i + 1}"
+                    day_name = _parse_forecast_day_name(day.get("datetime", ""), f"D{i + 1}")
                     day_icon = WEATHER_ICONS.get(day_condition, "weather-sunny")
 
                     if self.show_high_low and day_temp_low is not None:

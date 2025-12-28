@@ -140,10 +140,16 @@ def build_widget_states(
         # Get chart history for chart widgets
         history: list[float] = chart_history.get(slot.index, [])
 
+        # Get forecast for weather widgets (from entity attributes for mock data)
+        forecast: list[dict] = []
+        if entity and widget.config.widget_type == "weather":
+            forecast = entity.attributes.get("forecast", [])
+
         widget_states[slot.index] = WidgetState(
             entity=entity,
             entities=entities,
             history=history,
+            forecast=forecast,
             image=None,
             now=datetime.now(tz=UTC),
         )
