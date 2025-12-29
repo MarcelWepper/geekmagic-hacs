@@ -28,10 +28,9 @@ jobs:
         run: uv tool install pre-commit
 
       - name: Run pre-commit (ruff lint + format)
-              run: |
-                # The --exit-zero flag prevents the CI from failing on lint errors
-                pre-commit run --all-files ruff || true
-                pre-commit run --all-files ruff-format || true
+        run: |
+          pre-commit run --all-files ruff || true
+          pre-commit run --all-files ruff-format || true
 
   test:
     name: Test
