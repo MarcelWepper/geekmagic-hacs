@@ -19,21 +19,33 @@ from .websocket import async_register_websocket_commands
 
 _LOGGER = logging.getLogger(__name__)
 
-# Mandatory schema to specify that this integration is configured via UI (Config Flow)
+# Mandatory schema for integrations configured via UI
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 # Platforms for device control entities and image output
+# Sorted alphabetically to satisfy Ruff linting rules
 PLATFORMS: list[Platform] = [
+    Platform.BUTTON,
     Platform.IMAGE,
     Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
-    Platform.BUTTON,
 ]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the GeekMagic domain."""
+    """Set up the GeekMagic domain.
+
+    This is called once when the integration is first loaded.
+    It initializes the global store, WebSocket commands, and panel.
+
+    Args:
+        hass: Home Assistant instance
+        config: Configuration dictionary
+
+    Returns:
+        True if setup successful
+    """
     _LOGGER.debug("Setting up GeekMagic domain")
 
     # Initialize domain data
@@ -55,7 +67,15 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up GeekMagic from a config entry."""
+    """Set up GeekMagic from a config entry.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+
+    Returns:
+        True if setup successful
+    """
     # Ensure domain is set up
     if DOMAIN not in hass.data:
         await async_setup(hass, {})
@@ -100,7 +120,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
+    """Unload a config entry.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+
+    Returns:
+        True if unload successful
+    """
     host = entry.data.get(CONF_HOST, "unknown")
     _LOGGER.debug("Unloading GeekMagic integration for %s", host)
 
@@ -116,14 +144,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle options update."""
+    """Handle options update.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+    """
     host = entry.data.get(CONF_HOST, "unknown")
     _LOGGER.debug("Options updated for GeekMagic device %s", host)
     coordinator: GeekMagicCoordinator = hass.data[DOMAIN][entry.entry_id]
     coordinator.update_options(dict(entry.options))
+    # Trigger immediate refresh so device displays updated config
     await coordinator.async_request_refresh()
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle removal of an entry."""
+    """Handle removal of an entry.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry being removed
+    """
     # Clean up any resources if needed
